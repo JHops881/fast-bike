@@ -3,6 +3,7 @@
 
 import pygame as pg 
 import numpy as np
+import math
 import sys
 pg.init()
 
@@ -26,6 +27,17 @@ main_display_height = 1080
 main_display = pg.display.set_mode((main_display_width, main_display_height))
 main_clock = pg.time.Clock()
 
+
+main_tiles = [((0, 0), (100, 100), RED), ((100, 0), (200, 100), CYAN), ((200, 0), (300, 100), YELLOW)]
+
+def draw_tiles(display, tiles):
+    for tile in tiles:
+        w = math.fabs(tile[1][0] - tile[0][0])
+        h = math.fabs(tile[1][1] - tile[0][1])
+        pg.draw.rect(display, tile[2], (tile[0][0], tile[0][1], w, h))
+        
+
+
 ######################################################### PLAYER ############################################################
 
 class Player:
@@ -46,6 +58,8 @@ main_player = Player((main_display_width - main_player_width) / 2, (main_display
 
 while True:
     main_display.fill(BLACK) #This fills the screen with the color
+
+    draw_tiles(main_display, main_tiles)
 
     for event in pg.event.get(): #This is checking for exit
         if event.type == pg.QUIT:
