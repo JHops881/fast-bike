@@ -3,12 +3,12 @@
 
 import pygame as pg 
 import numpy as np
+import random
 import math
 import sys
+import pygame.gfxdraw as gfx
 pg.init()
-
-####################################################### COLORS ##############################################################
-
+######################################################## DATA ##############################################################
 BLACK = (0, 0, 0) #COLORS
 GRAY = (127, 127, 127)
 WHITE = (255, 255, 255)
@@ -19,7 +19,31 @@ YELLOW = (255, 255, 0)
 CYAN = (0, 255, 255)
 MAGENTA = (255, 0, 255)
 
-######################################################## DISPLAY ##############################################################
+color_list = (GRAY, RED, GREEN, BLUE, YELLOW, CYAN, MAGENTA)
+
+
+
+#[((-1, 1), (0, 0), RED), ((0, 1), (1, 0), CYAN), ((-1, 0), (0, -1), YELLOW), ((0, 0), (1, -1), MAGENTA)]
+
+class Tile:
+    def __init__(self, x1, y1, x2, y2, color):
+        self.x1 = x1
+        self.y1 = y1
+        self.x2 = x2
+        self.y2 = y2
+        self.color = color
+
+class Player:
+    def __init__(self, x, y, width, height, theta, movespeed, rotspeed):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.theta = theta
+        self.movespeed = movespeed
+        self.rotspeed = rotspeed
+
+main_player = Player(0, 0, 32, 32, 0, (1/15), 2)
 
 main_display_width = 1920
 main_display_height = 1080
@@ -27,47 +51,109 @@ main_display_height = 1080
 main_display = pg.display.set_mode((main_display_width, main_display_height))
 main_clock = pg.time.Clock()
 
+main_scale_factor = 75
+render_distance = 25
+map_radius = 20
 
-main_tiles = [((0, 0), (100, 100), RED), ((100, 0), (200, 100), CYAN), ((200, 0), (300, 100), YELLOW)]
+######################################################## FUNCTIONS ##############################################################
 
-def draw_tiles(display, tiles):
+
+def _rotate(theta, v):
+    theta = math.radians(theta)
+    A = math.cos(theta) * v[0] - math.sin(theta) * v[1]
+    B = math.sin(theta) * v[0] + math.cos(theta) * v[1]
+    return (A, B)
+
+def _draw(tile, player, display):
+    w = math.fabs(tile.x2 - tile.x1) * main_scale_factor
+    h = math.fabs(tile.y2 - tile.y1) * main_scale_factor
+    x = (tile.x1 - player.x) * main_scale_factor 
+    y = ((tile.y1 - player.y) * main_scale_factor) * -1 
+    p1 = _rotate(player.theta, (x,y))
+    p1 = (p1[0] + (main_display_width / 2), p1[1] + (main_display_height / 2))
+    p2 = _rotate(player.theta, (x+w,y))
+    p2 = (p2[0] + (main_display_width / 2), p2[1] + (main_display_height / 2))
+    p3 = _rotate(player.theta, (x+w, y+h))
+    p3 = (p3[0] + (main_display_width / 2), p3[1] + (main_display_height / 2))
+    p4 = _rotate(player.theta, (x, y+h))
+    p4 = (p4[0] + (main_display_width / 2), p4[1] + (main_display_height / 2))
+    pg.draw.polygon(display, tile.color, (p1, p2, p3, p4))
+    #gfx.aapolygon(display, (p1, p2, p3, p4), RED)
+
+def draw_tiles(tiles, player, display):
     for tile in tiles:
-        w = math.fabs(tile[1][0] - tile[0][0])
-        h = math.fabs(tile[1][1] - tile[0][1])
-        pg.draw.rect(display, tile[2], (tile[0][0], tile[0][1], w, h))
-        
+        _draw(tile, player, display)
 
+def _random_color(colors):
+    i = random.randint(0,6)
+    return colors[i]
 
-######################################################### PLAYER ############################################################
+def draw_player(player, display):
+    pg.draw.rect(display, WHITE, ((main_display_width - player.width) / 2, (main_display_height - player.height) / 2, player.width, player.height))
 
-class Player:
-    def __init__(self, x, y, width, height):
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
-    def draw_player(self, display):
-        pg.draw.rect(display, WHITE, (self.x, self.y, self.width, self.height))
+def generate_tiles(r, colors):
+    tiles = []
+    for y in range(r, -r, -1):
+        for x in range(-r, r, 1):
+            tiles.append(Tile(x, y, (x + 1), (y - 1), _random_color(colors)))
+    return tiles
 
-main_player_width = 32
-main_player_height = 32
-main_player = Player((main_display_width - main_player_width) / 2, (main_display_height - main_player_height) / 2, main_player_width, main_player_height)
-
-
+def render_tiles(player, renderdistance, tiles):
+    _rendered_tiles = []
+    for tile in tiles:
+        if ((((tile.x1 + tile.x2) / 2) - player.x)**2 + (((tile.y1 + tile.y2) / 2) - player.y)**2) < renderdistance:
+            _rendered_tiles.append(tile)
+    return _rendered_tiles
+    
+main_tiles = generate_tiles(map_radius, color_list)
 ######################################################### GAME LOOP ############################################################
+
 
 while True:
     main_display.fill(BLACK) #This fills the screen with the color
-
-    draw_tiles(main_display, main_tiles)
+    keys = pg.key.get_pressed()
 
     for event in pg.event.get(): #This is checking for exit
         if event.type == pg.QUIT:
             pg.quit()
             sys.exit()
-    
+    if keys[pg.K_ESCAPE]:
+        pg.quit()
+        sys.exit()
 
-    main_player.draw_player(main_display) #This object function draws our player
+
+    
+    if keys[pg.K_e]:
+        main_player.theta-=2
+    if keys[pg.K_q]:
+        main_player.theta+=2
+
+    if keys[pg.K_w]:
+        x, y = _rotate(main_player.theta, (0,1))
+        main_player.x += x * main_player.movespeed
+        main_player.y += y * main_player.movespeed
+
+    if keys[pg.K_s]:
+        x, y = _rotate(main_player.theta, (0,-1))
+        main_player.x += x * main_player.movespeed
+        main_player.y += y * main_player.movespeed
+ 
+    if keys[pg.K_a]:
+        x, y = _rotate(main_player.theta, (-1,0))
+        main_player.x += x * main_player.movespeed
+        main_player.y += y * main_player.movespeed
+   
+    if keys[pg.K_d]:
+        x, y = _rotate(main_player.theta, (1,0))
+        main_player.x += x * main_player.movespeed
+        main_player.y += y * main_player.movespeed
+      
+
+    draw_tiles(render_tiles(main_player, render_distance, main_tiles), main_player, main_display)    
+    
+    draw_player(main_player, main_display) #This object function draws our player
+
+    
 
     pg.display.update()
     main_clock.tick(60) #This is refreshing the screen 60 fps
