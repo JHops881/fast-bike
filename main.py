@@ -34,7 +34,7 @@ class Tile:
         self.color = color
 
 class Player:
-    def __init__(self, x, y, width, height, theta, movespeed, rotspeed):
+    def __init__(self, x, y, width, height, theta, movespeed, rotspeed, health):
         self.x = x
         self.y = y
         self.width = width
@@ -42,8 +42,9 @@ class Player:
         self.theta = theta
         self.movespeed = movespeed
         self.rotspeed = rotspeed
+        self.health = health
 
-main_player = Player(0, 0, 32, 32, 0, (1/15), 2)
+main_player = Player(0, 0, 32, 32, 0, (1/15), 2, 100)
 
 main_display_width = 1920
 main_display_height = 1080
@@ -104,8 +105,16 @@ def render_tiles(player, renderdistance, tiles):
         if ((((tile.x1 + tile.x2) / 2) - player.x)**2 + (((tile.y1 + tile.y2) / 2) - player.y)**2) < renderdistance:
             _rendered_tiles.append(tile)
     return _rendered_tiles
-    
+
 main_tiles = generate_tiles(map_radius, color_list)
+
+
+def draw_health(player, display):
+    gfx.aapolygon(display, ((20, 20),(220, 20),(220, 60), (20, 60)), RED)
+    x_offset = 0
+    for hp in range(player.health + 1):
+        pg.draw.rect(display, RED, (20 + x_offset, 20, 2, 40))
+        x_offset = hp * 2
 ######################################################### GAME LOOP ############################################################
 
 
@@ -152,7 +161,7 @@ while True:
     draw_tiles(render_tiles(main_player, render_distance, main_tiles), main_player, main_display)    
     
     draw_player(main_player, main_display) #This object function draws our player
-
+    draw_health(main_player, main_display)
     
 
     pg.display.update()
