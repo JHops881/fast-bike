@@ -7,6 +7,7 @@ import random
 import math
 import sys
 import pygame.gfxdraw as gfx
+import PIL
 pg.init()
 ######################################################## DATA ##############################################################
 BLACK = (0, 0, 0) #COLORS
@@ -18,12 +19,6 @@ BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
 CYAN = (0, 255, 255)
 MAGENTA = (255, 0, 255)
-
-color_list = (GRAY, RED, GREEN, BLUE, YELLOW, CYAN, MAGENTA)
-
-
-
-#[((-1, 1), (0, 0), RED), ((0, 1), (1, 0), CYAN), ((-1, 0), (0, -1), YELLOW), ((0, 0), (1, -1), MAGENTA)]
 
 class Tile:
     def __init__(self, x1, y1, x2, y2, color):
@@ -44,7 +39,7 @@ class Player:
         self.rotspeed = rotspeed
         self.health = health
 
-main_player = Player(0, 0, 32, 32, 0, (1/15), 2, 100)
+main_player = Player(0, 0, 32, 32, 0, (1/15), 2, 67)
 
 main_display_width = 1920
 main_display_height = 1080
@@ -52,7 +47,7 @@ main_display_height = 1080
 main_display = pg.display.set_mode((main_display_width, main_display_height))
 main_clock = pg.time.Clock()
 
-main_scale_factor = 75
+main_scale_factor = 64
 render_distance = 25
 map_radius = 20
 
@@ -85,10 +80,6 @@ def draw_tiles(tiles, player, display):
     for tile in tiles:
         _draw(tile, player, display)
 
-def _random_color(colors):
-    i = random.randint(0,6)
-    return colors[i]
-
 def draw_player(player, display):
     pg.draw.rect(display, WHITE, ((main_display_width - player.width) / 2, (main_display_height - player.height) / 2, player.width, player.height))
 
@@ -96,7 +87,7 @@ def generate_tiles(r, colors):
     tiles = []
     for y in range(r, -r, -1):
         for x in range(-r, r, 1):
-            tiles.append(Tile(x, y, (x + 1), (y - 1), _random_color(colors)))
+            tiles.append(Tile(x, y, (x + 1), (y - 1), GRAY))
     return tiles
 
 def render_tiles(player, renderdistance, tiles):
@@ -108,13 +99,14 @@ def render_tiles(player, renderdistance, tiles):
 
 main_tiles = generate_tiles(map_radius, color_list)
 
-
 def draw_health(player, display):
     gfx.aapolygon(display, ((20, 20),(220, 20),(220, 60), (20, 60)), RED)
     x_offset = 0
     for hp in range(player.health + 1):
         pg.draw.rect(display, RED, (20 + x_offset, 20, 2, 40))
         x_offset = hp * 2
+
+
 ######################################################### GAME LOOP ############################################################
 
 
