@@ -83,7 +83,7 @@ def draw_tiles(tiles, player, display):
 def draw_player(player, display):
     pg.draw.rect(display, WHITE, ((main_display_width - player.width) / 2, (main_display_height - player.height) / 2, player.width, player.height))
 
-def generate_tiles(r, colors):
+def generate_tiles(r):
     tiles = []
     for y in range(r, -r, -1):
         for x in range(-r, r, 1):
@@ -97,7 +97,7 @@ def render_tiles(player, renderdistance, tiles):
             _rendered_tiles.append(tile)
     return _rendered_tiles
 
-main_tiles = generate_tiles(map_radius, color_list)
+main_tiles = generate_tiles(map_radius)
 
 def draw_health(player, display):
     gfx.aapolygon(display, ((20, 20),(220, 20),(220, 60), (20, 60)), RED)
