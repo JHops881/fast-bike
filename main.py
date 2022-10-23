@@ -1,6 +1,5 @@
 
 ####################################################### IMPORTS ##############################################################
-
 import pygame as pg 
 import numpy as np
 import random
@@ -19,6 +18,8 @@ BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
 CYAN = (0, 255, 255)
 MAGENTA = (255, 0, 255)
+
+floor_tile_sprite = pg.image.load('Sprite-0001.png')
 
 class Tile:
     def __init__(self, x1, y1, x2, y2, color):
@@ -148,13 +149,22 @@ while True:
         x, y = _rotate(main_player.theta, (1,0))
         main_player.x += x * main_player.movespeed
         main_player.y += y * main_player.movespeed
-      
 
     draw_tiles(render_tiles(main_player, render_distance, main_tiles), main_player, main_display)    
     
     draw_player(main_player, main_display) #This object function draws our player
     draw_health(main_player, main_display)
     
+    s = floor_tile_sprite.get_rect()
+    fts_centerx = s.centerx
+    fts_centery = s.centery
+    print(fts_centerx, fts_centery)
+    t = pg.transform.rotate(floor_tile_sprite, -main_player.theta)
+    r = t.get_rect()
+    t_centerx = r.centerx
+    t_centery = r.centery
+
+    main_display.blit(t, (100 - (r.centerx - fts_centerx),100 - (r.centery - fts_centery)))
 
     pg.display.update()
     main_clock.tick(60) #This is refreshing the screen 60 fps
