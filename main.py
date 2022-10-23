@@ -1,6 +1,5 @@
 
 ####################################################### IMPORTS ##############################################################
-
 import pygame as pg 
 import numpy as np
 import random
@@ -19,6 +18,8 @@ BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
 CYAN = (0, 255, 255)
 MAGENTA = (255, 0, 255)
+
+floor_tile_sprite = pg.image.load('Sprite-0001.png')
 
 class Tile:
     def __init__(self, x1, y1, x2, y2, color):
@@ -43,12 +44,21 @@ main_player = Player(0, 0, 32, 32, 0, (1/15), 2, 67)
 
 main_display_width = 1920
 main_display_height = 1080
-
 main_display = pg.display.set_mode((main_display_width, main_display_height))
+
+
+floor_display_width = 1920
+floor_display_height = 1080
+floor_display = pg.Surface((floor_display_width, floor_display_height), pg.SRCALPHA, 32)
+floor_display = floor_display.convert_alpha()
+
+
+
+
 main_clock = pg.time.Clock()
 
-main_scale_factor = 64
-render_distance = 25
+main_scale_factor = 48
+render_distance = 100
 map_radius = 20
 
 ######################################################## FUNCTIONS ##############################################################
@@ -148,12 +158,18 @@ while True:
         x, y = _rotate(main_player.theta, (1,0))
         main_player.x += x * main_player.movespeed
         main_player.y += y * main_player.movespeed
-      
 
     draw_tiles(render_tiles(main_player, render_distance, main_tiles), main_player, main_display)    
     
     draw_player(main_player, main_display) #This object function draws our player
     draw_health(main_player, main_display)
+
+    pg.draw.rect(floor_display, RED, (200, 200, 200, 200))
+
+    s = floor_display.get_rect()
+    t = pg.transform.rotate(floor_display, -main_player.theta)
+    r = t.get_rect()
+    main_display.blit(t, (0- (r.centerx - s.centerx),0 - (r.centery - s.centery)))
     
 
     pg.display.update()
