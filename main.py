@@ -47,8 +47,8 @@ main_display_height = 1080
 main_display = pg.display.set_mode((main_display_width, main_display_height))
 main_clock = pg.time.Clock()
 
-main_scale_factor = 64
-render_distance = 25
+main_scale_factor = 48
+render_distance = 100
 map_radius = 20
 
 ######################################################## FUNCTIONS ##############################################################
