@@ -44,8 +44,17 @@ main_player = Player(0, 0, 32, 32, 0, (1/15), 2, 67)
 
 main_display_width = 1920
 main_display_height = 1080
-
 main_display = pg.display.set_mode((main_display_width, main_display_height))
+
+
+floor_display_width = 1920
+floor_display_height = 1080
+floor_display = pg.Surface((floor_display_width, floor_display_height), pg.SRCALPHA, 32)
+floor_display = floor_display.convert_alpha()
+
+
+
+
 main_clock = pg.time.Clock()
 
 main_scale_factor = 48
@@ -154,17 +163,14 @@ while True:
     
     draw_player(main_player, main_display) #This object function draws our player
     draw_health(main_player, main_display)
-    
-    s = floor_tile_sprite.get_rect()
-    fts_centerx = s.centerx
-    fts_centery = s.centery
-    print(fts_centerx, fts_centery)
-    t = pg.transform.rotate(floor_tile_sprite, -main_player.theta)
-    r = t.get_rect()
-    t_centerx = r.centerx
-    t_centery = r.centery
 
-    main_display.blit(t, (100 - (r.centerx - fts_centerx),100 - (r.centery - fts_centery)))
+    pg.draw.rect(floor_display, RED, (200, 200, 200, 200))
+
+    s = floor_display.get_rect()
+    t = pg.transform.rotate(floor_display, -main_player.theta)
+    r = t.get_rect()
+    main_display.blit(t, (0- (r.centerx - s.centerx),0 - (r.centery - s.centery)))
+    
 
     pg.display.update()
     main_clock.tick(60) #This is refreshing the screen 60 fps
