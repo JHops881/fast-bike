@@ -1,46 +1,45 @@
-
-
 // Tutorial from https://www.yld.io/blog/building-a-tcp-service-using-node-js/
+// https://nodejs.org/api/net.html
 
 const net = require('net');
-var server = net.createServer();
-server.on('connection', handleConnection);
+const EventEmitter = require('events');
+const server = net.createServer();
+const incoming_events = new EventEmitter();
+const Backend = require('./backend');
+const be = new Backend();
 
-server.listen(8080, function() {    
-    console.log('LISTENING ON: %j', server.address());  
+server.on('connection', (socket) => {
+
+    var client = socket.remoteAddress + ':' + socket.remotePort;  
+    console.log(`${client} connected`)
+
+    socket.setEncoding('utf8');
+
+    socket.on('data', (data) => {
+        data = JSON.parse(data)
+        incoming_events.emit(data.event, data, socket);
+    });  
+
+    socket.once('close', () => {  
+        console.log(`${client} closed`);  
+    });  
+
+    socket.on('error', (error) => {  
+        console.log(`${client} error ${error.message}`);  
+    });
+
 });
 
-function handleConnection(conn) {    
+server.listen(4398, () => {    
+    console.log('listening on %j', server.address());  
+});
 
-    var remoteAddress = conn.remoteAddress + ':' + conn.remotePort;  
-    console.log('NEW CONNECTION:\n\tADDR :%s', remoteAddress);
+incoming_events.on('testing', (data, socket) => {
+    socket.write();  
+});
 
-    conn.setEncoding('utf8');
+incoming_events.on('get_chunk', (data, socket) => {
 
-    conn.on('data', onConnData);  
-    conn.once('close', onConnClose);  
-    conn.on('error', onConnError);
-
-    function onConnData (d) {  
-        console.log('DATA:\n\tADDR: %s\n\tDATA: %j', remoteAddress, d); 
-        data = JSON.parse(d)
-        // work with data
-        
-
-        // send the response
-        resp = {
-            data: data,
-            time: Date.now(),
-            status: true
-        }
-        conn.write(JSON.stringify(resp));  
-    }
-
-    function onConnClose() {  
-        console.log('CLOSED:\n\tADDR: %s', remoteAddress);  
-    }
-
-    function onConnError(err) {  
-        console.log('ERROR:\n\tADDR: %s\n\t MSG: %s', remoteAddress, err.message);  
-    }  
-}
+    t = be.getChunk(data.coords)
+    socket.write(JSON.stringify(t));
+});

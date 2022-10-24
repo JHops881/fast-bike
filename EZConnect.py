@@ -33,10 +33,14 @@ class EZConnect:
         self.resp_time = time.time() * 1000 - self.send_time
         return t
 
-    def resp_time():
-        return self.resp_time
+    def req(self, data):
+        self.send(data)
+        return (self.get(16384), self.resp_time)
 
 if __name__ == '__main__':
-    with EZConnect('localhost', 8080) as t:
-        t.send({'first':'george', 'last':'washington'})
-        print(t.get(1024), t.resp_time)
+    with EZConnect('localhost', 4398) as t:
+        data, ping = t.req({
+            'event': 'get_chunk',
+            'coords': [0, 0]  
+        })
+        print(data, ping)
