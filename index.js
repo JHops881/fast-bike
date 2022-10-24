@@ -39,7 +39,6 @@ incoming_events.on('testing', (data, socket) => {
 });
 
 incoming_events.on('get_chunk', (data, socket) => {
-
-    t = be.getChunk(data.coords)
+    t = be.getChunk(data.coords);
     socket.write(JSON.stringify(t));
 });

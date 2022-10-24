@@ -7,6 +7,7 @@ import math
 import sys
 import pygame.gfxdraw as gfx
 import PIL
+from EZConnect import EZConnect
 pg.init()
 ######################################################## DATA ##############################################################
 BLACK = (0, 0, 0) #COLORS
@@ -159,17 +160,31 @@ while True:
         main_player.x += x * main_player.movespeed
         main_player.y += y * main_player.movespeed
 
-    draw_tiles(render_tiles(main_player, render_distance, main_tiles), main_player, main_display)    
+    ### PROOF OF CONCEPT SERVER TILES!
+    with EZConnect('localhost', 4398) as t:
+        resp, ping = t.req({
+            'event': 'get_chunk',
+            'coords': [0, 0]  
+        })
+
+    serverTitles = []
+    for tile in resp['tiles']:
+        serverTitles.append(Tile(tile['a'][0], tile['a'][1], (tile['a'][0]+ 1), (tile['a'][1] - 1), tile['color']))
+    draw_tiles(render_tiles(main_player, render_distance, serverTitles), main_player, main_display)
+    ### END PROOF OF CONCEPT
+
+
+    #draw_tiles(render_tiles(main_player, render_distance, main_tiles), main_player, main_display) 
     
     draw_player(main_player, main_display) #This object function draws our player
     draw_health(main_player, main_display)
 
-    pg.draw.rect(floor_display, RED, (200, 200, 200, 200))
+    # pg.draw.rect(floor_display, RED, (200, 200, 200, 200))
 
-    s = floor_display.get_rect()
-    t = pg.transform.rotate(floor_display, -main_player.theta)
-    r = t.get_rect()
-    main_display.blit(t, (0- (r.centerx - s.centerx),0 - (r.centery - s.centery)))
+    # s = floor_display.get_rect()
+    # t = pg.transform.rotate(floor_display, -main_player.theta)
+    # r = t.get_rect()
+    # main_display.blit(t, (0- (r.centerx - s.centerx),0 - (r.centery - s.centery)))
     
 
     pg.display.update()
