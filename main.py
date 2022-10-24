@@ -47,13 +47,8 @@ main_display_width = 1920
 main_display_height = 1080
 main_display = pg.display.set_mode((main_display_width, main_display_height))
 
-
-floor_display_width = 1920
-floor_display_height = 1080
-floor_display = pg.Surface((floor_display_width, floor_display_height), pg.SRCALPHA, 32)
-floor_display = floor_display.convert_alpha()
-
-
+floor_surface_width = 1920
+floor_surface_height = 1080
 
 
 main_clock = pg.time.Clock()
@@ -108,7 +103,7 @@ def render_tiles(player, renderdistance, tiles):
             _rendered_tiles.append(tile)
     return _rendered_tiles
 
-main_tiles = generate_tiles(map_radius)
+all_tiles = generate_tiles(map_radius)
 
 def draw_health(player, display):
     gfx.aapolygon(display, ((20, 20),(220, 20),(220, 60), (20, 60)), RED)
@@ -161,31 +156,48 @@ while True:
         main_player.y += y * main_player.movespeed
 
     ### PROOF OF CONCEPT SERVER TILES!
-    with EZConnect('localhost', 4398) as t:
-        resp, ping = t.req({
-            'event': 'get_chunk',
-            'coords': [0, 0]  
-        })
+    # with EZConnect('192.168.1.11', 4398) as t:
+    #     resp, ping = t.req({
+    #         'event': 'get_chunk',
+    #         'coords': [int(main_player.x/8), int(main_player.y/8)]  
+    #     })
 
-    serverTitles = []
-    for tile in resp['tiles']:
-        serverTitles.append(Tile(tile['a'][0], tile['a'][1], (tile['a'][0]+ 1), (tile['a'][1] - 1), tile['color']))
-    draw_tiles(render_tiles(main_player, render_distance, serverTitles), main_player, main_display)
+    # serverTitles = []
+    # for tile in resp['tiles']:
+    #     serverTitles.append(Tile(tile['a'][0], tile['a'][1], (tile['a'][0]+ 1), (tile['a'][1] - 1), tile['color']))
+    # draw_tiles(render_tiles(main_player, render_distance, serverTitles), main_player, main_display)
     ### END PROOF OF CONCEPT
 
 
-    #draw_tiles(render_tiles(main_player, render_distance, main_tiles), main_player, main_display) 
+    draw_tiles(render_tiles(main_player, render_distance, all_tiles), main_player, main_display) 
     
     draw_player(main_player, main_display) #This object function draws our player
     draw_health(main_player, main_display)
 
-    # pg.draw.rect(floor_display, RED, (200, 200, 200, 200))
 
-    # s = floor_display.get_rect()
-    # t = pg.transform.rotate(floor_display, -main_player.theta)
-    # r = t.get_rect()
-    # main_display.blit(t, (0- (r.centerx - s.centerx),0 - (r.centery - s.centery)))
+
+
+
+    floor_surface = pg.Surface((floor_surface_width, floor_surface_height), pg.SRCALPHA, 32)
+    floor_surface = floor_surface.convert_alpha()
+
+    pg.draw.rect(floor_surface, RED, (
+        (16 - main_player.x) * main_scale_factor,
+        ((-5 - main_player.y) * main_scale_factor) * -1,
+        1 * main_scale_factor,
+        1 * main_scale_factor
+        )
+    )
+
+    s = floor_surface.get_rect()
+    dynamic_floor_surface = pg.transform.rotate(floor_surface, -main_player.theta)
+    r = dynamic_floor_surface.get_rect()
+    main_display.blit(dynamic_floor_surface, (0- (r.centerx - s.centerx),0 - (r.centery - s.centery)))
     
+
+
+
+
 
     pg.display.update()
     main_clock.tick(60) #This is refreshing the screen 60 fps
