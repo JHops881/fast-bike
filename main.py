@@ -64,32 +64,24 @@ while True:
     ### END PROOF OF CONCEPT
 
 
-    func.draw_tiles(func.render_tiles(data.main_player, data.render_distance, func.all_tiles), data.main_player, data.main_display) 
-    
-    func.draw_player(data.main_player, data.main_display) #This object function draws our player
-    func.draw_health(data.main_player, data.main_display)
 
-
-
-
-    
     floor_surface = pg.Surface((data.floor_surface_width, data.floor_surface_height), pg.SRCALPHA, 32)
     floor_surface = floor_surface.convert_alpha()
 
-    pg.draw.rect(floor_surface, data.RED, (
-        (16 - data.main_player.x) * data.main_scale_factor,
-        ((-5 - data.main_player.y) * data.main_scale_factor) * -1,
-        1 * data.main_scale_factor,
-        1 * data.main_scale_factor
-        )
-    )
 
+    func.draw_FloorTiles(func.render_FloorTiles(data.main_player, data.render_distance, func.all_FloorTiles), data.main_player, floor_surface)
+
+    
     s = floor_surface.get_rect()
     dynamic_floor_surface = pg.transform.rotate(floor_surface, -data.main_player.theta)
     r = dynamic_floor_surface.get_rect()
     data.main_display.blit(dynamic_floor_surface, (0- (r.centerx - s.centerx),0 - (r.centery - s.centery)))
     
 
+
+
+    func.draw_player(data.main_player, data.main_display) #This object function draws our player
+    func.draw_health(data.main_player, data.main_display)
 
 
 

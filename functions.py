@@ -29,31 +29,6 @@ def _rotate(theta: float, v: tuple) -> tuple:
 
 
 
-def _draw(tile: data.Tile, player: data.Player, display: pg.display) -> None:
-    w = math.fabs(tile.x2 - tile.x1) * data.main_scale_factor
-    h = math.fabs(tile.y2 - tile.y1) * data.main_scale_factor
-    x = (tile.x1 - player.x) * data.main_scale_factor 
-    y = ((tile.y1 - player.y) * data.main_scale_factor) * -1 
-    p1 = _rotate(player.theta, (x,y))
-    p1 = (p1[0] + (data.main_display_width / 2), p1[1] + (data.main_display_height / 2))
-    p2 = _rotate(player.theta, (x+w,y))
-    p2 = (p2[0] + (data.main_display_width / 2), p2[1] + (data.main_display_height / 2))
-    p3 = _rotate(player.theta, (x+w, y+h))
-    p3 = (p3[0] + (data.main_display_width / 2), p3[1] + (data.main_display_height / 2))
-    p4 = _rotate(player.theta, (x, y+h))
-    p4 = (p4[0] + (data.main_display_width / 2), p4[1] + (data.main_display_height / 2))
-    pg.draw.polygon(display, tile.color, (p1, p2, p3, p4))
-    #gfx.aapolygon(display, (p1, p2, p3, p4), RED)
-
-
-
-
-def draw_tiles(tiles, player, display):
-    for tile in tiles:
-        _draw(tile, player, display)
-
-
-
 
 def draw_player(player: data.Player, display: pg.display) -> None:
     """
@@ -71,8 +46,8 @@ def draw_player(player: data.Player, display: pg.display) -> None:
 
 
 
-
-def generate_tiles(r: int) -> list:
+#TODO: Redo documentation
+def generate_FloorTiles(r: int) -> list:
     """
     For a given radius (r), a list of data.Tile objects is returned. The data.Tile objects are arranged
     at coordinates such that they form a square with the given radius.
@@ -88,18 +63,14 @@ def generate_tiles(r: int) -> list:
     tiles = list()
     for y in range(r, -r, -1):
         for x in range(-r, r, 1):
-            tiles.append(data.Tile(x, y, (x + 1), (y - 1), data.GRAY))
+            tiles.append(data.FloorTile(x, y, data.floor_tile_sprite))
     return tiles
 
 
 
 
-all_tiles = generate_tiles(data.map_radius)
-
-
-
-
-def render_tiles(player: data.Player, renderdistance: int, tiles: list) -> list:
+#TODO: Redo documentation 
+def render_FloorTiles(player: data.Player, renderdistance: int, tiles: list) -> list:
     """
     Based on a player's (player) postion, render distance (renderdistance), and a list of all data.Tile objects loaded (tiles),
     a list of data.Tile objects is returned with same objects organized coordinately such that they form a circle around the player.
@@ -112,13 +83,30 @@ def render_tiles(player: data.Player, renderdistance: int, tiles: list) -> list:
 
     Returns:
     _rendered_tiles (list(data.Tile)): a list of data.Tile objects organized coordinately such that they form a circle around
-        the player's (x,y) postion with a radius equal to renderdistance. 
+        the player's (x,y) postion with a radius equal to renderdistance.
     """
-    _rendered_tiles = []
+    _rendered_tiles = list()
     for tile in tiles:
-        if ((((tile.x1 + tile.x2) / 2) - player.x)**2 + (((tile.y1 + tile.y2) / 2) - player.y)**2) < renderdistance:
+        if (((tile.x + .5) - player.x)**2 + ((tile.y + .5) - player.y)**2) < renderdistance:
             _rendered_tiles.append(tile)
     return _rendered_tiles
+
+
+
+
+#TODO: Redo documentation 
+def draw_FloorTiles(tiles, player, display):
+    for tile in tiles:
+        x = (tile.x - player.x) * data.main_scale_factor 
+        y = ((tile.y - player.y) * data.main_scale_factor) * -1
+        p1 = (x + (data.main_display_width / 2), y + (data.main_display_height / 2))
+        display.blit(tile.texture, p1)
+
+
+all_FloorTiles = generate_FloorTiles(data.map_radius)
+
+
+
 
 
 
