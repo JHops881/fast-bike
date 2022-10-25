@@ -3,6 +3,7 @@ class Backend {
     constructor() {
         this.chunk_dim = 8;
         this.chunks = {};
+        this.players = {}
     }
 
     getChunk(coords) {
@@ -28,6 +29,20 @@ class Backend {
         }
         return this.chunks[chunk_key];
     } 
+
+    removePlayer(id) {
+        delete this.players[id];
+        return true;
+    }
+
+    updatePlayer(id, pos) {
+        this.players[id] = pos;
+        return true;
+    }
+
+    getPlayers() {
+        return this.players;
+    }
 
 
 }

@@ -42,3 +42,23 @@ incoming_events.on('get_chunk', (data, socket) => {
     t = be.getChunk(data.coords);
     socket.write(JSON.stringify(t));
 });
+
+incoming_events.on('update_player', (data, socket) => {
+    if (be.updatePlayer(data.id, data.pos))
+        socket.write(JSON.stringify({resp: 'success'}));
+    else 
+    socket.write(JSON.stringify({resp: 'misseed'}));
+});
+
+incoming_events.on('del_player', (data, socket) => {
+    if (be.removePlayer(data.id))
+        socket.write(JSON.stringify({resp: 'success'}));
+    else 
+        socket.write(JSON.stringify({resp: 'misseed'}));
+});
+
+incoming_events.on('get_players', (data, socket) => {
+
+    socket.write(JSON.stringify(be.getPlayers()));
+
+});
