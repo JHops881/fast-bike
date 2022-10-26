@@ -58,7 +58,7 @@ incoming_events.on('del_player', (data, socket) => {
 });
 
 incoming_events.on('get_players', (data, socket) => {
-
+    // Comment
     socket.write(JSON.stringify(be.getPlayers()));
 
 });
