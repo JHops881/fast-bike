@@ -9,7 +9,7 @@ import data
 pg.init()
 
 
-
+#+------------------------------+#| START GAME LOOP |#+------------------------------+#
 
 while True:
     data.main_display.fill(data.BLACK)
@@ -22,12 +22,9 @@ while True:
     if keys[pg.K_ESCAPE]:
         pg.quit()
         sys.exit()
-        with EZConnect('localhost', 4398) as t:
-            _, _ = t.req({
-                'event': 'del_player',
-                'id' : UUID,
-            })
 
+
+    
     if keys[pg.K_e]:
         data.main_player.theta-=2
     if keys[pg.K_q]:
@@ -54,8 +51,6 @@ while True:
         data.main_player.y += y * data.main_player.movespeed
 
     ### PROOF OF CONCEPT SERVER TILES!
-
-
     # with EZConnect('192.168.1.11', 4398) as t:
     #     resp, ping = t.req({
     #         'event': 'get_chunk',
@@ -66,17 +61,8 @@ while True:
     # for tile in resp['tiles']:
     #     serverTitles.append(Tile(tile['a'][0], tile['a'][1], (tile['a'][0]+ 1), (tile['a'][1] - 1), tile['color']))
     # draw_tiles(render_tiles(main_player, render_distance, serverTitles), main_player, main_display)
-
     ### END PROOF OF CONCEPT
 
-    for player in players.keys():
-        i = players[player][0]
-        j = players[player][1]
-        print(i, j, main_player.x, main_player.y)
-        pg.draw.rect(main_display, WHITE, (
-            (main_player.x - i)*main_scale_factor + (main_display_width - 32) / 2, 
-            (-main_player.y - -j)*main_scale_factor + (main_display_height - 32) / 2, 
-            32, 32))
 
 
     floor_surface = pg.Surface((data.floor_surface_width, data.floor_surface_height), pg.SRCALPHA, 32)
@@ -84,6 +70,7 @@ while True:
 
 
     func.draw_FloorTiles(func.render_FloorTiles(data.main_player, data.render_distance, func.all_FloorTiles), data.main_player, floor_surface)
+    func.draw_PassiveSprites(data.main_player, func.render_PassiveSprite(data.main_player, data.render_distance, data.all_PassiveSprites), floor_surface)
 
     
     s = floor_surface.get_rect()

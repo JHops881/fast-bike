@@ -1,3 +1,4 @@
+from ast import Pass
 import pygame as pg 
 import numpy as np
 import pygame.gfxdraw as gfx
@@ -33,9 +34,6 @@ class FloorTile:
         self.y = y
         self.texture = texture
 
-tt1 = FloorTile(16, -5, floor_tile_sprite)
-
-
 
 map_radius = 20
 main_scale_factor = 48
@@ -44,6 +42,27 @@ render_distance = 100
 floor_surface_width = 1920
 floor_surface_height = 1080
 #+-------------------------+#| TILE DATA |#+-------------------------+#
+
+
+
+
+
+
+#+-------------------------+#| SPRITE DATA |#+-------------------------+#\
+class PassiveSprite:
+    def __init__(self, x, y, sprite):
+        self.x = x
+        self.y = y
+        self.sprite = sprite
+
+
+cactus_sprite = pg.image.load("Sprite-0002.png")
+
+ts = PassiveSprite(4, -2, cactus_sprite)
+all_PassiveSprites = [ts]
+
+
+#+-------------------------+#| SPRITE DATA |#+-------------------------+#
 
 
 

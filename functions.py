@@ -1,4 +1,5 @@
 
+from smtplib import SMTPRecipientsRefused
 import pygame as pg 
 import numpy as np
 import math
@@ -41,24 +42,23 @@ def draw_player(player: data.Player, display: pg.display) -> None:
     Returns:
     None
     """
-    pg.draw.rect(display, data.WHITE, ((data.main_display_width - player.width) / 2, (data.main_display_height - player.height) / 2, player.width, player.height))
+    pg.draw.rect(display, data.GREEN, ((data.main_display_width - player.width) / 2, (data.main_display_height - player.height) / 2, player.width, player.height))
 
 
 
 
-#TODO: Redo documentation
 def generate_FloorTiles(r: int) -> list:
     """
-    For a given radius (r), a list of data.Tile objects is returned. The data.Tile objects are arranged
-    at coordinates such that they form a square with the given radius.
+    For a given radius (r), a list of data.FloorTile objects is returned. The data.FloorTile objects are arranged
+    at coordinates such that they from a square with the given "radius".
 
     Parameters:
     r (int): a radius that the user desired the square to have. Note that the radius should be passed in as squared value of
-        what the user desired the raius of the square of data.Tile objects to be. For example, if the user desires the 
-        square of data.Tile objects to have a radius of 8 data.Tile objects, the user should pass in 64 for r.
+        what the user desired the true radius of the square of data.FloorTile objects to be. For example, if the user desires the 
+        square of data.FloorTile objects to have a radius of 8 data.FloorTile objects, the user should pass in 64 for r.
 
     Returns:
-    tiles (list(data.Tile)): list of data.Tile obejects that are in a square. The data.Tile obejects are centered around (0,0)
+    tiles (list(data.FloorTile)): list of data.FloorTile obejects that are in a square. The data.FloorTile obejects are centered around (0,0)
     """
     tiles = list()
     for y in range(r, -r, -1):
@@ -69,20 +69,19 @@ def generate_FloorTiles(r: int) -> list:
 
 
 
-#TODO: Redo documentation 
 def render_FloorTiles(player: data.Player, renderdistance: int, tiles: list) -> list:
     """
-    Based on a player's (player) postion, render distance (renderdistance), and a list of all data.Tile objects loaded (tiles),
-    a list of data.Tile objects is returned with same objects organized coordinately such that they form a circle around the player.
-    Obviously, this circle of data.Tile objects has a radius that is roughly equal to the render distance.
+    Based on a player's (player) postion, render distance (renderdistance), and a list of all data.FloorTile objects loaded (tiles),
+    a list of data.FloorTile objects is returned with same objects organized coordinately such that they form a circle around the player.
+    Obviously, this circle of data.FloorTile objects has a radius that is roughly equal to the render distance.
 
     Parameters:
-    player (data.Player): a player that the user desires to render the data.Tile objects about
-    renderdistance (int): the radius in data.Tile units (1 unit = 1 data.Tile) that the user wishes to render data.Tile objects within
-    tiles (list(data.Tile)): a list of all loaded data.Tile objects that will be iterated through to determine the redner data.Tile objects
+    player (data.Player): a player that the user desires to render the data.FloorTile objects about
+    renderdistance (int): the radius in data.FloorTile units (1 unit = 1 data.FloorTile) that the user wishes to render data.FloorTile objects within
+    tiles (list(data.FloorTile)): a list of all loaded data.FloorTile objects that will be iterated through to determine the render data.FloorTile objects
 
     Returns:
-    _rendered_tiles (list(data.Tile)): a list of data.Tile objects organized coordinately such that they form a circle around
+    _rendered_tiles (list(data.FloorTile)): a list of data.FloorTile objects organized coordinately such that they form a circle around
         the player's (x,y) postion with a radius equal to renderdistance.
     """
     _rendered_tiles = list()
@@ -95,17 +94,46 @@ def render_FloorTiles(player: data.Player, renderdistance: int, tiles: list) -> 
 
 
 #TODO: Redo documentation 
-def draw_FloorTiles(tiles, player, display):
+def draw_FloorTiles(tiles: list, player: data.Player, surface: pg.surface) -> None:
+    """
+    Draws list of data.FloorTile objects onto the surface. The data.FloorTile objects are drawn in screen space 
+    such that they accuractely portray their postion relative to the player position.
+
+    Paramters:
+    tiles (list(data.FloorTile)): a list of data.FloorTile objects that are going to be drawn onto the surface
+    player (data.Player): a data.Player that the user desires to the data.FloorTile objects to be drawn relative to
+    surface (pg.surface): a pg.surface that the user wishes to draw the data.FloorTile objects onto
+    """
     for tile in tiles:
         x = (tile.x - player.x) * data.main_scale_factor 
-        y = ((tile.y - player.y) * data.main_scale_factor) * -1
+        y = ((tile.y - player.y + 1) * data.main_scale_factor) * -1
         p1 = (x + (data.main_display_width / 2), y + (data.main_display_height / 2))
-        display.blit(tile.texture, p1)
+        surface.blit(tile.texture, p1)
 
 
 all_FloorTiles = generate_FloorTiles(data.map_radius)
 
 
+
+
+
+
+def draw_PassiveSprites(player, sprites, display):
+    for sprite in sprites:
+        x = (sprite.x - player.x) * data.main_scale_factor 
+        y = ((sprite.y - player.y + 1) * data.main_scale_factor) * -1
+        p1 = (x + (data.main_display_width / 2), y + (data.main_display_height / 2))
+        display.blit(sprite.sprite, p1)
+
+
+
+
+def render_PassiveSprite(player: data.Player, renderdistance: int, sprites: list) -> list:
+    _rendered_sprites = list()
+    for sprite in sprites:
+        if (((sprite.x + .5) - player.x)**2 + ((sprite.y + .5) - player.y)**2) < renderdistance:
+            _rendered_sprites.append(sprite)
+    return _rendered_sprites
 
 
 
