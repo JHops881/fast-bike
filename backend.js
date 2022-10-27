@@ -1,6 +1,7 @@
 class Backend {
 
     constructor() {
+        // hi joshua!
         this.chunk_dim = 8;
         this.chunks = {};
         this.players = {}
