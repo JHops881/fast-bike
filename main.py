@@ -4,15 +4,14 @@ import numpy as np
 import math
 import sys
 from EZConnect import EZConnect
-import functions as func
-import data
+import graphics as gxm
 pg.init()
 
 
 #+------------------------------+#| START GAME LOOP |#+------------------------------+#
 
 while True:
-    data.main_display.fill(data.BLACK)
+    gxm.main_display.fill(gxm.BLACK)
     keys = pg.key.get_pressed()
 
     for event in pg.event.get(): #This is checking for exit
@@ -26,29 +25,29 @@ while True:
 
     
     if keys[pg.K_e]:
-        data.main_player.theta-=2
+        gxm.main_player.theta-=2
     if keys[pg.K_q]:
-        data.main_player.theta+=2
+        gxm.main_player.theta+=2
 
     if keys[pg.K_w]:
-        x, y = func._rotate(data.main_player.theta, (0,1))
-        data.main_player.x += x * data.main_player.movespeed
-        data.main_player.y += y * data.main_player.movespeed
+        x, y = gxm._rotate(gxm.main_player.theta, (0,1))
+        gxm.main_player.x += x * gxm.main_player.movespeed
+        gxm.main_player.y += y * gxm.main_player.movespeed
 
     if keys[pg.K_s]:
-        x, y = func._rotate(data.main_player.theta, (0,-1))
-        data.main_player.x += x * data.main_player.movespeed
-        data.main_player.y += y * data.main_player.movespeed
+        x, y = gxm._rotate(gxm.main_player.theta, (0,-1))
+        gxm.main_player.x += x * gxm.main_player.movespeed
+        gxm.main_player.y += y * gxm.main_player.movespeed
  
     if keys[pg.K_a]:
-        x, y = func._rotate(data.main_player.theta, (-1,0))
-        data.main_player.x += x * data.main_player.movespeed
-        data.main_player.y += y * data.main_player.movespeed
+        x, y = gxm._rotate(gxm.main_player.theta, (-1,0))
+        gxm.main_player.x += x * gxm.main_player.movespeed
+        gxm.main_player.y += y * gxm.main_player.movespeed
    
     if keys[pg.K_d]:
-        x, y = func._rotate(data.main_player.theta, (1,0))
-        data.main_player.x += x * data.main_player.movespeed
-        data.main_player.y += y * data.main_player.movespeed
+        x, y = gxm._rotate(gxm.main_player.theta, (1,0))
+        gxm.main_player.x += x * gxm.main_player.movespeed
+        gxm.main_player.y += y * gxm.main_player.movespeed
 
     ### PROOF OF CONCEPT SERVER TILES!
     # with EZConnect('192.168.1.11', 4398) as t:
@@ -65,30 +64,30 @@ while True:
 
 
 
-    floor_surface = pg.Surface((data.floor_surface_width, data.floor_surface_height), pg.SRCALPHA, 32)
+    floor_surface = pg.Surface((gxm.floor_surface_width, gxm.floor_surface_height), pg.SRCALPHA, 32)
     floor_surface = floor_surface.convert_alpha()
 
 
-    func.draw_FloorTiles(func.render_FloorTiles(data.main_player, data.render_distance, func.all_FloorTiles), data.main_player, floor_surface)
-    func.draw_PassiveSprites(data.main_player, func.render_PassiveSprite(data.main_player, data.render_distance, data.all_PassiveSprites), floor_surface)
+    gxm.draw_FloorTiles(gxm.render_FloorTiles(gxm.main_player, gxm.render_distance, gxm.all_FloorTiles), gxm.main_player, floor_surface)
+    gxm.draw_PassiveSprites(gxm.main_player, gxm.render_PassiveSprite(gxm.main_player, gxm.render_distance, gxm.all_PassiveSprites), floor_surface)
 
     
     s = floor_surface.get_rect()
-    dynamic_floor_surface = pg.transform.rotate(floor_surface, -data.main_player.theta)
+    dynamic_floor_surface = pg.transform.rotate(floor_surface, -gxm.main_player.theta)
     r = dynamic_floor_surface.get_rect()
-    data.main_display.blit(dynamic_floor_surface, (0- (r.centerx - s.centerx),0 - (r.centery - s.centery)))
+    gxm.main_display.blit(dynamic_floor_surface, (0- (r.centerx - s.centerx),0 - (r.centery - s.centery)))
     
 
 
 
-    func.draw_player(data.main_player, data.main_display) #This object function draws our player
-    func.draw_health(data.main_player, data.main_display)
+    gxm.draw_player(gxm.main_player, gxm.main_display) #This object function draws our player
+    gxm.draw_health(gxm.main_player, gxm.main_display)
 
 
 
 
     pg.display.update()
-    data.main_clock.tick(60) #This is refreshing the screen 60 fps
+    gxm.main_clock.tick(60) #This is refreshing the screen 60 fps
 
 
 #+------------------------------+#| END GAME LOOP |#+------------------------------+#
