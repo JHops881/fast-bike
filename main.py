@@ -12,6 +12,11 @@ pg.init()
 
 while True:
     gxm.main_display.fill(gxm.BLACK)
+
+    floor_surface = pg.Surface((gxm.floor_surface_width, gxm.floor_surface_height), pg.SRCALPHA, 32)
+    floor_surface = floor_surface.convert_alpha()
+
+
     keys = pg.key.get_pressed()
 
     for event in pg.event.get(): #This is checking for exit
@@ -64,23 +69,17 @@ while True:
 
 
 
-    floor_surface = pg.Surface((gxm.floor_surface_width, gxm.floor_surface_height), pg.SRCALPHA, 32)
-    floor_surface = floor_surface.convert_alpha()
+   
 
 
     gxm.draw_FloorTiles(gxm.render_FloorTiles(gxm.main_player, gxm.render_distance, gxm.all_FloorTiles), gxm.main_player, floor_surface)
-    gxm.draw_PassiveSprites(gxm.main_player, gxm.render_PassiveSprite(gxm.main_player, gxm.render_distance, gxm.all_PassiveSprites), floor_surface)
-
     
-    s = floor_surface.get_rect()
-    dynamic_floor_surface = pg.transform.rotate(floor_surface, -gxm.main_player.theta)
-    r = dynamic_floor_surface.get_rect()
-    gxm.main_display.blit(dynamic_floor_surface, (0- (r.centerx - s.centerx),0 - (r.centery - s.centery)))
+    gxm.rotate_surface(gxm.main_player, floor_surface, gxm.main_display)
     
-
-
+    gxm.draw_Terrain(gxm.main_player, gxm.render_Terrain(gxm.main_player, gxm.render_distance, gxm.all_Terrain), gxm.main_display)
 
     gxm.draw_player(gxm.main_player, gxm.main_display) #This object function draws our player
+
     gxm.draw_health(gxm.main_player, gxm.main_display)
 
 
