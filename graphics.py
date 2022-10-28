@@ -114,16 +114,17 @@ main_player = Player(0, 0, 32, 32, 0, (1/15), 2, 67)
 
 #player ^
 #+--------------------------------------------------+#| FLOOR TILE |#+-------------------------------------------------+#
-floor_tile_sprite = pg.image.load('./Sprites/FloorTile/sand.png')
 
-
+FloorTile_sprite_map = {
+    1: pg.image.load('./Sprites/FloorTile/sand.png')
+}
 
 
 class FloorTile:
-    def __init__(self, x, y, sprite):
+    def __init__(self, x, y, id):
         self.x = x
         self.y = y
-        self.sprite = sprite
+        self.id = id
 
 
 
@@ -144,7 +145,7 @@ def generate_FloorTiles(r: int) -> list:
     tiles = list()
     for y in range(r, -r, -1):
         for x in range(-r, r, 1):
-            tiles.append(FloorTile(x, y, floor_tile_sprite))
+            tiles.append(FloorTile(x, y, 1))
     return tiles
 
 
@@ -191,7 +192,7 @@ def draw_FloorTiles(tiles: list, player: Player, surface: pg.surface) -> None:
         x = (tile.x - player.x) * main_scale_factor 
         y = ((tile.y - player.y + 1) * main_scale_factor) * -1
         p1 = (x + (main_display_width / 2), y + (main_display_height / 2))
-        surface.blit(tile.sprite, p1)
+        surface.blit(FloorTile_sprite_map[tile.id], p1)
 
 
 
