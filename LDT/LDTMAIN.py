@@ -2,6 +2,7 @@ from dis import dis
 import pygame as pg
 import math
 import sys
+import csv
 pg.init()
 
 
@@ -65,6 +66,7 @@ water_x, water_y = 1770, 132
 viewport_width, viewport_height = 1608, 952
 viewport_x, viewport_y = 64, 64
 
+zoom =0
 view_scale_factor = 48
 view_render_distance = (17.5,11)
 class Anchor:
@@ -86,17 +88,21 @@ def render_map(tiles: list, anchor: Anchor, renderdistance: tuple) -> list:
             rendered_tiles.append(tile)
     return rendered_tiles
 
-def draw_view(tiles, anchor, viewsurface):
+def draw_view(tiles, anchor, viewsurface, zoom):
     for tile in tiles:
         x = (tile.x - anchor.x) * view_scale_factor 
         y = ((tile.y - anchor.y +1) * view_scale_factor) * -1
         p1 = (x + (viewport_width / 2), y + (viewport_height / 2))
-        viewsurface.blit(FloorTile_sprite_map[tile.id], (p1))
+        t = pg.transform.scale(FloorTile_sprite_map[tile.id], (48+zoom,48+zoom))
+        viewsurface.blit(t, (p1))
 
 def new_map(s):
+    s = math.floor(s)
+    if s % 2 > 0:
+        s-=1
     tiles = list()
-    for x in range(s):
-        for y in range(s):
+    for x in range(int(-s/2), int(s/2)):
+        for y in range(int(-s/2), int(s/2)):
             tiles.append(FloorTile(x, y, 0))
     return tiles
 
@@ -111,13 +117,14 @@ exporttext = myfont.render('export', False, (255,255,255), None)
 #--------------------------# MAIN #--------------------------# 
 while True:
 
-    display.fill((45,49,45))
-    pg.draw.rect(display, (0,0,0), (viewport_x, viewport_y, viewport_width, viewport_height)) #viewport
-    viewport_surface = pg.Surface((viewport_width, viewport_height), pg.SRCALPHA, 32)
-    viewport_surface = viewport_surface.convert_alpha()
+    display.fill((45,49,45)) #APPLICATION BACKGROUD COLOR
+
+    viewport_surface = pg.Surface((viewport_width, viewport_height)) #VIEWPORT SURFACE INITIALIZING
+
+    tiles_in_viewport = render_map(_map, viewport_anchor, view_render_distance) #VIEWPORT SURFACE RENDERING
+    draw_view(tiles_in_viewport, viewport_anchor, viewport_surface, zoom) #DRAWING ON VIEWPORT
     
-    draw_view(render_map(_map, viewport_anchor, view_render_distance), viewport_anchor, viewport_surface)
-    display.blit(viewport_surface, (viewport_x, viewport_y))
+    display.blit(viewport_surface, (viewport_x, viewport_y)) #DRAWING VIEWPORT ON APPLICATION/DISPLAy
     
 
 
@@ -126,7 +133,7 @@ while True:
     display.blit(FloorTile_sprite_map[2], (rock_x, rock_y)) #rock in selector
     display.blit(FloorTile_sprite_map[3], (dirt_x, dirt_y)) #dirt in selector
     display.blit(FloorTile_sprite_map[4], (grass_x, grass_y)) #grass in selector
-    display.blit(FloorTile_sprite_map[5], (water_x, water_y))
+    display.blit(FloorTile_sprite_map[5], (water_x, water_y)) #water in selector
 
     display.blit(selected_sprite, (selected_sprite_x, selected_sprite_y))
 
@@ -137,16 +144,28 @@ while True:
     pg.draw.rect(display, (90,94,90), (1702, 595, 50, 20)) #down button
 
 
+    #pg.draw
+
 
     mouse_x, mouse_y = pg.mouse.get_pos()
     keys = pg.key.get_pressed()
+
+
+    if was_clicked(viewport_x, viewport_y, viewport_width, viewport_height) == True:
+        for tile in tiles_in_viewport:
+            x = (tile.x - viewport_anchor.x) * view_scale_factor
+            y = ((tile.y - viewport_anchor.y +1) * view_scale_factor) * -1
+            x, y = x + (viewport_width / 2) +64, y + (viewport_height / 2)+64
+            if was_clicked(x, y, 48, 48):
+                pos_text = 'X: ' + str(tile.x) + ' Y: ' + str(tile.y)
+                display.blit((myfont.render(pos_text, False, (255,255,255), None)), (64, 20))
 
     for event in pg.event.get(): #This is checking for exit
         if event.type == pg.QUIT:
             pg.quit()
             sys.exit()
         
-        if event.type == pg.MOUSEBUTTONDOWN:
+        if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
             if was_clicked(sand_x, sand_y, 48, 48) == True:
                 selected_sprite_x, selected_sprite_y = sand_x-2, sand_y-2
                 brush = 1
@@ -168,12 +187,24 @@ while True:
                 brush = 5
 
             if was_clicked(viewport_x, viewport_y, viewport_width, viewport_height) == True:
-                for tile in _map:
+                for tile in tiles_in_viewport:
                     x = (tile.x - viewport_anchor.x) * view_scale_factor
                     y = ((tile.y - viewport_anchor.y +1) * view_scale_factor) * -1
                     x, y = x + (viewport_width / 2) +64, y + (viewport_height / 2)+64
                     if was_clicked(x, y, 48, 48):
                         _map[_map.index(tile)].id = brush
+
+
+        if event.type == pg.MOUSEBUTTONDOWN and event.button == 3:
+            if was_clicked(viewport_x, viewport_y, viewport_width, viewport_height) == True:
+                for tile in tiles_in_viewport:
+                    x = (tile.x - viewport_anchor.x) * view_scale_factor
+                    y = ((tile.y - viewport_anchor.y +1) * view_scale_factor) * -1
+                    x, y = x + (viewport_width / 2) +64, y + (viewport_height / 2)+64
+                    if was_clicked(x, y, 48, 48):
+                        _map[_map.index(tile)].id = 0
+
+
     if keys[pg.K_ESCAPE]:
         pg.quit()
         sys.exit()
