@@ -14,7 +14,7 @@ myfont.bold = True
 
 #--------------------------# FUNCTIONS #--------------------------# 
 
-def was_clicked(x: float, y: float, w: float, h: float) -> bool:
+def mouse_pos_within(x: float, y: float, w: float, h: float) -> bool:
     '''
     Given the dimensions and location of a rectangular zone in screen space, returns a bool of whether or 
     not the mouse cursor is whithin the zone's bounds.
@@ -66,14 +66,14 @@ water_x, water_y = 1770, 132
 viewport_width, viewport_height = 1608, 952
 viewport_x, viewport_y = 64, 64
 
-zoom =0
 view_scale_factor = 48
-view_render_distance = (17.5,11)
+
 class Anchor:
-    def __init__(self, x, y):
+    def __init__(self, x, y, speed):
         self.x = x
         self.y = y
-viewport_anchor = Anchor(0,0)
+        self.speed = speed
+viewport_anchor = Anchor(0,0,.4)
 
 class FloorTile:
     def __init__(self, x, y, id):
@@ -88,12 +88,12 @@ def render_map(tiles: list, anchor: Anchor, renderdistance: tuple) -> list:
             rendered_tiles.append(tile)
     return rendered_tiles
 
-def draw_view(tiles, anchor, viewsurface, zoom):
+def draw_view(tiles, anchor, viewsurface):
     for tile in tiles:
-        x = (tile.x - anchor.x) * view_scale_factor 
+        x = (tile.x - anchor.x) * view_scale_factor
         y = ((tile.y - anchor.y +1) * view_scale_factor) * -1
         p1 = (x + (viewport_width / 2), y + (viewport_height / 2))
-        t = pg.transform.scale(FloorTile_sprite_map[tile.id], (48+zoom,48+zoom))
+        t = pg.transform.scale(FloorTile_sprite_map[tile.id], (view_scale_factor,view_scale_factor))
         viewsurface.blit(t, (p1))
 
 def new_map(s):
@@ -108,11 +108,11 @@ def new_map(s):
 
 _map = new_map(100)
 #--------------------------# CANVAS SIZE #--------------------------# 
-canvas_size_text = myfont.render('Canvas Size', False, (0,0,0), None)
+canvas_size_text = myfont.render('Canvas Size', False, (20,30,20), None)
 
 #--------------------------# EXPORT #--------------------------# 
-exporttext = myfont.render('export', False, (255,255,255), None)
-
+exporttext = myfont.render('Export', False, (170,180,170), None)
+export_x, export_y, export_width, export_height = 1702, 670, 94, 30
 
 #--------------------------# MAIN #--------------------------# 
 while True:
@@ -121,8 +121,8 @@ while True:
 
     viewport_surface = pg.Surface((viewport_width, viewport_height)) #VIEWPORT SURFACE INITIALIZING
 
-    tiles_in_viewport = render_map(_map, viewport_anchor, view_render_distance) #VIEWPORT SURFACE RENDERING
-    draw_view(tiles_in_viewport, viewport_anchor, viewport_surface, zoom) #DRAWING ON VIEWPORT
+    tiles_in_viewport = render_map(_map, viewport_anchor, ((viewport_width/2)/view_scale_factor + 1,(viewport_height/2)/view_scale_factor + 1)) #VIEWPORT SURFACE RENDERING
+    draw_view(tiles_in_viewport, viewport_anchor, viewport_surface) #DRAWING ON VIEWPORT
     
     display.blit(viewport_surface, (viewport_x, viewport_y)) #DRAWING VIEWPORT ON APPLICATION/DISPLAy
     
@@ -144,66 +144,78 @@ while True:
     pg.draw.rect(display, (90,94,90), (1702, 595, 50, 20)) #down button
 
 
-    #pg.draw
-
+    pg.draw.rect(display, (20,30,20), (export_x, export_y, export_width, export_height)) # EXPORT 
+    display.blit(exporttext,(export_x+5, export_y+5))
 
     mouse_x, mouse_y = pg.mouse.get_pos()
     keys = pg.key.get_pressed()
 
 
-    if was_clicked(viewport_x, viewport_y, viewport_width, viewport_height) == True:
+    if mouse_pos_within(viewport_x, viewport_y, viewport_width, viewport_height):
         for tile in tiles_in_viewport:
             x = (tile.x - viewport_anchor.x) * view_scale_factor
             y = ((tile.y - viewport_anchor.y +1) * view_scale_factor) * -1
             x, y = x + (viewport_width / 2) +64, y + (viewport_height / 2)+64
-            if was_clicked(x, y, 48, 48):
+            if mouse_pos_within(x, y, view_scale_factor, view_scale_factor):
                 pos_text = 'X: ' + str(tile.x) + ' Y: ' + str(tile.y)
                 display.blit((myfont.render(pos_text, False, (255,255,255), None)), (64, 20))
 
     for event in pg.event.get(): #This is checking for exit
-        if event.type == pg.QUIT:
-            pg.quit()
-            sys.exit()
+        
         
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
-            if was_clicked(sand_x, sand_y, 48, 48) == True:
-                selected_sprite_x, selected_sprite_y = sand_x-2, sand_y-2
-                brush = 1
-
-            if was_clicked(rock_x, rock_y, 48, 48) == True:
-                selected_sprite_x, selected_sprite_y = rock_x-2, rock_y-2
-                brush = 2
-
-            if was_clicked(dirt_x, dirt_y, 48, 48) == True:
-                selected_sprite_x, selected_sprite_y = dirt_x-2, dirt_y-2
-                brush = 3 
-
-            if was_clicked(grass_x, grass_y, 48, 48) == True:
-                selected_sprite_x, selected_sprite_y = grass_x-2, grass_y-2
-                brush = 4
-
-            if was_clicked(water_x, water_y, 48, 48) == True:
-                selected_sprite_x, selected_sprite_y = water_x-2, water_y-2
-                brush = 5
-
-            if was_clicked(viewport_x, viewport_y, viewport_width, viewport_height) == True:
+            
+            if mouse_pos_within(viewport_x, viewport_y, viewport_width, viewport_height): #VIEWPORT CLICK CHECK
                 for tile in tiles_in_viewport:
                     x = (tile.x - viewport_anchor.x) * view_scale_factor
                     y = ((tile.y - viewport_anchor.y +1) * view_scale_factor) * -1
                     x, y = x + (viewport_width / 2) +64, y + (viewport_height / 2)+64
-                    if was_clicked(x, y, 48, 48):
+                    if mouse_pos_within(x, y, view_scale_factor, view_scale_factor):
                         _map[_map.index(tile)].id = brush
 
+            elif mouse_pos_within(selector_x, selector_y, selector_width, selector_height): #SELECTOR CLICK CHECK
+                if mouse_pos_within(sand_x, sand_y, 48, 48):
+                    selected_sprite_x, selected_sprite_y = sand_x-2, sand_y-2
+                    brush = 1
 
-        if event.type == pg.MOUSEBUTTONDOWN and event.button == 3:
-            if was_clicked(viewport_x, viewport_y, viewport_width, viewport_height) == True:
+                elif mouse_pos_within(rock_x, rock_y, 48, 48):
+                    selected_sprite_x, selected_sprite_y = rock_x-2, rock_y-2
+                    brush = 2
+
+                elif mouse_pos_within(dirt_x, dirt_y, 48, 48):
+                    selected_sprite_x, selected_sprite_y = dirt_x-2, dirt_y-2
+                    brush = 3 
+
+                elif mouse_pos_within(grass_x, grass_y, 48, 48):
+                    selected_sprite_x, selected_sprite_y = grass_x-2, grass_y-2
+                    brush = 4
+
+                elif mouse_pos_within(water_x, water_y, 48, 48):
+                    selected_sprite_x, selected_sprite_y = water_x-2, water_y-2
+                    brush = 5
+
+            elif mouse_pos_within(export_x, export_y, export_width, export_height): #EXPORT CLICK CHECK
+                with open('./output/export.csv', 'w') as file:
+                    writer = csv.writer(file)
+                    for tile in _map:
+                        if tile.id != 0:
+                            line = (tile.x,tile.y,tile.id)
+                            writer.writerow(line)
+                file.close()
+                exporttext = myfont.render('Done.', False, (170,180,170), None)
+
+        elif event.type == pg.MOUSEBUTTONDOWN and event.button == 3:
+            if mouse_pos_within(viewport_x, viewport_y, viewport_width, viewport_height):
                 for tile in tiles_in_viewport:
                     x = (tile.x - viewport_anchor.x) * view_scale_factor
                     y = ((tile.y - viewport_anchor.y +1) * view_scale_factor) * -1
                     x, y = x + (viewport_width / 2) +64, y + (viewport_height / 2)+64
-                    if was_clicked(x, y, 48, 48):
+                    if mouse_pos_within(x, y, view_scale_factor, view_scale_factor):
                         _map[_map.index(tile)].id = 0
 
+        elif event.type == pg.QUIT:
+            pg.quit()
+            sys.exit()
 
     if keys[pg.K_ESCAPE]:
         pg.quit()
@@ -213,13 +225,17 @@ while True:
 
     # panning movement with wasd in viewport #
     if keys[pg.K_a]:
-        viewport_anchor.x -= .4
+        viewport_anchor.x -= viewport_anchor.speed
     if keys[pg.K_d]:
-        viewport_anchor.x += .4
+        viewport_anchor.x += viewport_anchor.speed
     if keys[pg.K_w]:
-        viewport_anchor.y += .4
+        viewport_anchor.y += viewport_anchor.speed
     if keys[pg.K_s]:
-        viewport_anchor.y -= .4
+        viewport_anchor.y -= viewport_anchor.speed
+    if keys[pg.K_UP]:
+        view_scale_factor += 1
+    if keys[pg.K_DOWN]:
+        view_scale_factor -= 1
     # panning movement with wasd in viewport #
 
     pg.display.update()
