@@ -7,6 +7,7 @@ const server = net.createServer();
 const incoming_events = new EventEmitter();
 const Backend = require('./backend');
 const be = new Backend();
+const events = require('./events.json');
 
 server.on('connection', (socket) => {
 
@@ -18,20 +19,17 @@ server.on('connection', (socket) => {
     socket.on('data', (data) => {
         try {
             data = JSON.parse(data)
-            if (!('event' in data))
-                throw new Error();
-            // TODO add error if the event type is invalid
+            if (!('event' in data)) throw new Error(); // when no event tag in the req
+            if (!(data.event in events)) throw new Error() // when it is not an event we handle
             incoming_events.emit(data.event, data, socket);
         } catch(e) {
             if (e instanceof SyntaxError) {
-                console.log(`${data} is not parseable into JSON`)
                 socket.write(JSON.stringify({
-                    "error": "data is not parseable into JSON"
+                    "err": "request is not parseable into JSON"
                 }));
             } else {
-                console.log(`${data} doesn't contain an event!`)
                 socket.write(JSON.stringify({
-                    "error": "data doesn't contain an event"
+                    "err": "request does not contain a valid event"
                 }));
             }
         }
@@ -51,13 +49,25 @@ server.listen(4399, () => {
     console.log('listening on %j', server.address());  
 });
 
-incoming_events.on('testing', (data, socket) => {
-    socket.write();  
+incoming_events.on('login', (data, socket) => {
+    socket.write(JSON.stringify({
+        err: "unimplemented"
+    }));
+});
+
+incoming_events.on('logout', (data, socket) => {
+    socket.write(JSON.stringify({
+        err: "unimplemented"
+    }));
 });
 
 incoming_events.on('get_chunk', (data, socket) => {
     t = be.getChunk(data.coords);
     socket.write(JSON.stringify(t));
+});
+
+incoming_events.on('get_players', (data, socket) => {
+    socket.write(JSON.stringify(be.getPlayers()));
 });
 
 incoming_events.on('update_player', (data, socket) => {
@@ -67,15 +77,6 @@ incoming_events.on('update_player', (data, socket) => {
     socket.write(JSON.stringify({resp: 'misseed'}));
 });
 
-incoming_events.on('del_player', (data, socket) => {
-    if (be.removePlayer(data.id))
-        socket.write(JSON.stringify({resp: 'success'}));
-    else 
-        socket.write(JSON.stringify({resp: 'misseed'}));
-});
-
-incoming_events.on('get_players', (data, socket) => {
-    // Comment
-    socket.write(JSON.stringify(be.getPlayers()));
-
+incoming_events.on('get_events', (data, socket) => {
+    socket.write(JSON.stringify(be.getEvents()));
 });

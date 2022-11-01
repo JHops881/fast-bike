@@ -113,5 +113,24 @@ if __name__ == '__main__':
             'event': 'get_chunk',
             'coords': [0, 0]  
         }
-        print('sending\n', json.dumps(r, indent=4))
-        print('received\n', json.dumps(t.req(r), indent=4)[:200], '...')
+        print('sending', json.dumps(r), sep='\n')
+        print('received', json.dumps(t.req(r))[:200] + '...', sep='\n')
+        r = {
+            'event': 'get_events'
+        }
+        print('sending', json.dumps(r), sep='\n')
+        print('received', json.dumps(t.req(r))[:200] + '...', sep='\n')
+
+        r = {
+            'event': 'login',
+            'user': 'admin',
+            'pass': '1234'
+        }
+        print('sending', json.dumps(r), sep='\n')
+        print('received', json.dumps(t.req(r))[:200] + '...', sep='\n')
+        r = {
+            'event': 'logout',
+            'uuid': None
+        }
+        print('sending', json.dumps(r), sep='\n')
+        print('received', json.dumps(t.req(r))[:200] + '...', sep='\n')

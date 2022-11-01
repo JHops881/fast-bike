@@ -1,7 +1,8 @@
+const events = require('./events.json');
+
 class Backend {
 
     constructor() {
-        // hi joshua!
         this.chunk_dim = 8;
         this.chunks = {};
         this.players = {}
@@ -43,6 +44,10 @@ class Backend {
 
     getPlayers() {
         return this.players;
+    }
+
+    getEvents() {
+        return events;
     }
 
 
