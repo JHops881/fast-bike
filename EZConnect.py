@@ -58,7 +58,6 @@ class EZConnect:
 
         returns  `True` if the data was sent, `False` otherwise.
         """
-
         assert data != None, "Data cannot be None"
         assert data['event'] != None, "Must specify an event"
         assert data['event'] in self.events.keys(), data['event'] + " is not a valid event"
