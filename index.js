@@ -25,8 +25,14 @@ server.on('connection', (socket) => {
         } catch(e) {
             if (e instanceof SyntaxError) {
                 console.log(`${data} is not parseable into JSON`)
+                socket.write(JSON.stringify({
+                    "error": "data is not parseable into JSON"
+                }));
             } else {
                 console.log(`${data} doesn't contain an event!`)
+                socket.write(JSON.stringify({
+                    "error": "data doesn't contain an event"
+                }));
             }
         }
     });  
@@ -41,7 +47,7 @@ server.on('connection', (socket) => {
 
 });
 
-server.listen(4398, () => {    
+server.listen(4399, () => {    
     console.log('listening on %j', server.address());  
 });
 

@@ -5,16 +5,7 @@ import socket, json, time
 
 class EZConnect:
 
-    events: dict = {
-        'get_chunk': ['uuid', 'pos'],
-        'login' : ['user', 'pass'],
-        'logout' : ['uuid'],
-        'testing' : ['data'],
-        'update_player' : ['uuid', 'pos'],
-        'get_players' : ['uuid']
-    }
-
-    def __init__(self, host: str = "localhost", port: int = "8080"):
+    def __init__(self, host: str = "localhost", port: int = 4399):
         """
         Do not call this constructor. Instead do the following:
         
@@ -34,6 +25,10 @@ class EZConnect:
         self.port = port
         self.send_time = 0
         self.resp_time = 0
+
+        with open('events.json', 'r') as f:
+            self.events = json.loads(f.read())
+        
 
     def __enter__(self):
         """
@@ -114,8 +109,9 @@ class EZConnect:
 
 if __name__ == '__main__':
     with EZConnect() as t:
-        data, ping = t.req({
+        r = {
             'event': 'get_chunk',
             'coords': [0, 0]  
-        })
-        print(data, ping)
+        }
+        print('sending\n', json.dumps(r, indent=4))
+        print('received\n', json.dumps(t.req(r), indent=4)[:200], '...')
