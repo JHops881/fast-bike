@@ -8,7 +8,10 @@ class EZConnect:
     events: dict = {
         'get_chunk': ['uuid', 'pos'],
         'login' : ['user', 'pass'],
-        'logout' : ['uuid']
+        'logout' : ['uuid'],
+        'testing' : ['data'],
+        'update_player' : ['uuid', 'pos'],
+        'get_players' : ['uuid']
     }
 
     def __init__(self, host: str = "localhost", port: int = "8080"):

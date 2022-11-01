@@ -16,8 +16,19 @@ server.on('connection', (socket) => {
     socket.setEncoding('utf8');
 
     socket.on('data', (data) => {
-        data = JSON.parse(data)
-        incoming_events.emit(data.event, data, socket);
+        try {
+            data = JSON.parse(data)
+            if (!('event' in data))
+                throw new Error();
+            // TODO add error if the event type is invalid
+            incoming_events.emit(data.event, data, socket);
+        } catch(e) {
+            if (e instanceof SyntaxError) {
+                console.log(`${data} is not parseable into JSON`)
+            } else {
+                console.log(`${data} doesn't contain an event!`)
+            }
+        }
     });  
 
     socket.once('close', () => {  

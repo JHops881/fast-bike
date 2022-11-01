@@ -1,0 +1,8 @@
+{
+    "get_chunk" : ["uuid", "pos"],
+    "login" : ["user", "pass"],
+    "logout" : ["uuid"],
+    "testing" : ["data"],
+    "update_player" : ["uuid", "pos"],
+    "get_players" : ["uuid"]
+}
