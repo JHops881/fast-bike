@@ -6,7 +6,9 @@ import socket, json, time
 class EZConnect:
 
     events: dict = {
-        'get_chunk': ['pos'] 
+        'get_chunk': ['uuid', 'pos'],
+        'login' : ['user', 'pass'],
+        'logout' : ['uuid']
     }
 
     def __init__(self, host: str = "localhost", port: int = "8080"):
@@ -43,12 +45,12 @@ class EZConnect:
         Closes the connection to `host:port`
         """
         if exc_type is not None:
-            traceback.print_exception(exc_type, exc_value, tb)
+            print(exc_type, exc_value, tb)
             return False
         self.s.close()
         return True
 
-    def send(self, data: dict):
+    def send(self, data: dict) -> bool:
         """
         Send a packet of JSON to `host:port`.
 
@@ -56,7 +58,7 @@ class EZConnect:
 
         - `data` the data to send as a JSON parsable object. It must contain the key `'event'` with a valid event name. Valid event names are in `self.events`.
 
-        - returns  `True` if the data was sent, `False` otherwise.
+        returns  `True` if the data was sent, `False` otherwise.
         """
 
         assert data != None, "Data cannot be None"
@@ -76,20 +78,39 @@ class EZConnect:
         except Exception:
             print(t, "couldn't be sent to", self.host + ":" + self.port)
             return False
-            
+
         return True
         
-    def get(self, size):
+    def get(self, size: int = 16384) -> dict:
+        """
+        Wait for a packet from `host:port`
+
+        Synchronously waits for data from the connection. If no data is received, this call will softlock. Also, this function records the time delta since the last `this.send()` call into the field `self.resp_time`.
+
+        - `size` the maximum size in bytes to take from the receiving buffer. 
+        
+        returns the data recieved from the connection as a parsed json
+        """
         t = json.loads(self.s.recv(size))
         self.resp_time = time.time() * 1000 - self.send_time
         return t
 
-    def req(self, data):
-        self.send(data)
-        return (self.get(16384), self.resp_time)
+    def req(self, data: dict) -> dict:
+        """
+        Sends data to `host:port` and waits for a response.
+
+        This function calls `this.send()` and `this.get()` under the hood. See them for further details.
+
+        - `data` the data to send as a JSON parsable object. It must contain the key `'event'` with a valid event name. Valid event names are in `self.events`.
+
+        if the data was sent, returns the data recieved from the connection as a parsed json else returns `None`
+        """
+        if(self.send(data)):
+            return self.get()
+        return None
 
 if __name__ == '__main__':
-    with EZConnect('localhost', 4398) as t:
+    with EZConnect() as t:
         data, ping = t.req({
             'event': 'get_chunk',
             'coords': [0, 0]  
