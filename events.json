@@ -1,0 +1,29 @@
+{
+    "login" : {
+        "send" : ["user", "pass"],
+        "rec" : ["err", "uuid"]
+    },
+    "logout" : {
+        "send": ["uuid"],
+        "rec" : ["err"]
+    },
+
+    "get_chunk" : {
+        "send": ["uuid", "pos"],
+        "rec" : ["err", "data"]
+    },
+    "get_players" : {
+        "send": ["uuid"],
+        "rec": ["err", "data"]
+    },
+
+    "update_player" : {
+        "send": ["uuid", "pos"],
+        "rec" : ["err"]
+    },
+
+    "get_events" : {
+        "send": [],
+        "rec": ["err", "data"]
+    }
+}

@@ -5,11 +5,7 @@ import socket, json, time
 
 class EZConnect:
 
-    events: dict = {
-        'get_chunk': ['pos'] 
-    }
-
-    def __init__(self, host: str = "localhost", port: int = "8080"):
+    def __init__(self, host: str = "localhost", port: int = 4399):
         """
         Do not call this constructor. Instead do the following:
         
@@ -30,6 +26,10 @@ class EZConnect:
         self.send_time = 0
         self.resp_time = 0
 
+        with open('events.json', 'r') as f:
+            self.events = json.loads(f.read())
+        
+
     def __enter__(self):
         """
         Establishes connection with the `host:port`
@@ -43,12 +43,12 @@ class EZConnect:
         Closes the connection to `host:port`
         """
         if exc_type is not None:
-            traceback.print_exception(exc_type, exc_value, tb)
+            print(exc_type, exc_value, tb)
             return False
         self.s.close()
         return True
 
-    def send(self, data: dict):
+    def send(self, data: dict) -> bool:
         """
         Send a packet of JSON to `host:port`.
 
@@ -56,9 +56,8 @@ class EZConnect:
 
         - `data` the data to send as a JSON parsable object. It must contain the key `'event'` with a valid event name. Valid event names are in `self.events`.
 
-        - returns  `True` if the data was sent, `False` otherwise.
+        returns  `True` if the data was sent, `False` otherwise.
         """
-
         assert data != None, "Data cannot be None"
         assert data['event'] != None, "Must specify an event"
         assert data['event'] in self.events.keys(), data['event'] + " is not a valid event"
@@ -76,22 +75,61 @@ class EZConnect:
         except Exception:
             print(t, "couldn't be sent to", self.host + ":" + self.port)
             return False
-            
+
         return True
         
-    def get(self, size):
+    def get(self, size: int = 16384) -> dict:
+        """
+        Wait for a packet from `host:port`
+
+        Synchronously waits for data from the connection. If no data is received, this call will softlock. Also, this function records the time delta since the last `this.send()` call into the field `self.resp_time`.
+
+        - `size` the maximum size in bytes to take from the receiving buffer. 
+        
+        returns the data recieved from the connection as a parsed json
+        """
         t = json.loads(self.s.recv(size))
         self.resp_time = time.time() * 1000 - self.send_time
         return t
 
-    def req(self, data):
-        self.send(data)
-        return (self.get(16384), self.resp_time)
+    def req(self, data: dict) -> dict:
+        """
+        Sends data to `host:port` and waits for a response.
+
+        This function calls `this.send()` and `this.get()` under the hood. See them for further details.
+
+        - `data` the data to send as a JSON parsable object. It must contain the key `'event'` with a valid event name. Valid event names are in `self.events`.
+
+        if the data was sent, returns the data recieved from the connection as a parsed json else returns `None`
+        """
+        if(self.send(data)):
+            return self.get()
+        return None
 
 if __name__ == '__main__':
-    with EZConnect('localhost', 4398) as t:
-        data, ping = t.req({
+    with EZConnect() as t:
+        r = {
             'event': 'get_chunk',
             'coords': [0, 0]  
-        })
-        print(data, ping)
+        }
+        print('sending', json.dumps(r), sep='\n')
+        print('received', json.dumps(t.req(r))[:200] + '...', sep='\n')
+        r = {
+            'event': 'get_events'
+        }
+        print('sending', json.dumps(r), sep='\n')
+        print('received', json.dumps(t.req(r))[:200] + '...', sep='\n')
+
+        r = {
+            'event': 'login',
+            'user': 'admin',
+            'pass': '1234'
+        }
+        print('sending', json.dumps(r), sep='\n')
+        print('received', json.dumps(t.req(r))[:200] + '...', sep='\n')
+        r = {
+            'event': 'logout',
+            'uuid': None
+        }
+        print('sending', json.dumps(r), sep='\n')
+        print('received', json.dumps(t.req(r))[:200] + '...', sep='\n')

@@ -2,11 +2,10 @@
 // https://nodejs.org/api/net.html
 
 const net = require('net');
-const EventEmitter = require('events');
 const server = net.createServer();
-const incoming_events = new EventEmitter();
-const Backend = require('./backend');
-const be = new Backend();
+
+const be = require('./backend');
+const events = require('./events.json');
 
 server.on('connection', (socket) => {
 
@@ -16,8 +15,22 @@ server.on('connection', (socket) => {
     socket.setEncoding('utf8');
 
     socket.on('data', (data) => {
-        data = JSON.parse(data)
-        incoming_events.emit(data.event, data, socket);
+        try {
+            req = JSON.parse(data)
+            if (!('event' in req)) throw new Error(); // when no event tag in the req
+            if (!(req.event in events)) throw new Error() // when it is not an event we handle
+            be.emit(req.event, req, socket);
+        } catch(e) {
+            if (e instanceof SyntaxError) {
+                socket.write(JSON.stringify({
+                    "err": "request is not parseable into JSON"
+                }));
+            } else {
+                socket.write(JSON.stringify({
+                    "err": "request does not contain a valid event"
+                }));
+            }
+        }
     });  
 
     socket.once('close', () => {  
@@ -30,35 +43,6 @@ server.on('connection', (socket) => {
 
 });
 
-server.listen(4398, () => {    
-    console.log('listening on %j', server.address());  
-});
-
-incoming_events.on('testing', (data, socket) => {
-    socket.write();  
-});
-
-incoming_events.on('get_chunk', (data, socket) => {
-    t = be.getChunk(data.coords);
-    socket.write(JSON.stringify(t));
-});
-
-incoming_events.on('update_player', (data, socket) => {
-    if (be.updatePlayer(data.id, data.pos))
-        socket.write(JSON.stringify({resp: 'success'}));
-    else 
-    socket.write(JSON.stringify({resp: 'misseed'}));
-});
-
-incoming_events.on('del_player', (data, socket) => {
-    if (be.removePlayer(data.id))
-        socket.write(JSON.stringify({resp: 'success'}));
-    else 
-        socket.write(JSON.stringify({resp: 'misseed'}));
-});
-
-incoming_events.on('get_players', (data, socket) => {
-    // Comment
-    socket.write(JSON.stringify(be.getPlayers()));
-
+server.listen(4399, () => {    
+    console.log('listening on port 4399');  
 });
