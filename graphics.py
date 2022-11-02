@@ -53,8 +53,8 @@ map_radius = 20
 main_scale_factor = 48
 render_distance = 100
 
-floor_surface_width = 1920
-floor_surface_height = 1080
+tile_surface_width = 1920
+tile_surface_height = 1080
 
 
 
@@ -106,7 +106,24 @@ def draw_player(player: Player, display: pg.display) -> None:
     """
     pg.draw.rect(display, GREEN, ((main_display_width - player.width) / 2, (main_display_height - player.height) / 2, player.width, player.height))
 
+
+
+
+def supervised_player_theta(player):
+    if player.theta == 360:
+        new_theta = 0
+        return new_theta
+    elif player.theta == -2:
+        new_theta = 358
+        return new_theta
+    else:
+        return player.theta
+
+
+
 main_player = Player(0, 0, 32, 32, 0, (1/15), 2, 67)
+
+
 
 
 
@@ -235,20 +252,143 @@ class Wall:
         self.y2 = y2
         self.color = color
 
+def draw_Walls(tiles: list, player: Player, surface: pg.surface) -> None:
+    for ceil in tiles:
+
+        # --- # SOUTH SIDE # --- #
+        #BOTOM LEFT OF CEIL
+        x1s = (ceil.x - player.x) * main_scale_factor + _rotate(player.theta, (0,offset))[0]
+        y1s = ((ceil.y - player.y + 1) * main_scale_factor) * -1 - _rotate(player.theta, (0,offset))[1]
+        p1s = (x1s + (main_display_width / 2), y1s + (main_display_height / 2)+main_scale_factor)
+        #BOTTOM RIGHT OF CEIL
+        p2s = (p1s[0]+main_scale_factor, p1s[1])
+        #BOTTOM LEFT OF FLOOR
+        x4s = (ceil.x - player.x) * main_scale_factor 
+        y4s = ((ceil.y - player.y + 1) * main_scale_factor) * -1
+        p4s = (x4s + (main_display_width / 2), y4s + (main_display_height / 2)+main_scale_factor)
+        #BORROM RIGHT OF FLOOR
+        p3s = (p4s[0]+main_scale_factor, p4s[1])
+        # --- # SOUTH SIDE # --- #
+        
+
+        # --- # EAST SIDE # --- #
+        #BRoC
+        p1e = p2s
+        #TRoC
+        p2e = (p1e[0], p1e[1]-main_scale_factor)
+        #TRoF
+        p3e = (p3s[0], p3s[1]-main_scale_factor)
+        #BRoF
+        p4e = p3s
+        # --- # EAST SIDE # --- #
 
 
+        # --- # NORTH SIDE # --- #
+        #TRoC
+        p1n = p2e
+        #TLoC
+        p2n = (p2e[0]-main_scale_factor, p2e[1])
+        #TLoF
+        p3n = (p3e[0]-main_scale_factor, p3e[1])
+        #TRoF
+        p4n = p3e
+        # --- # NORTH SIDE # --- #
+
+
+        # --- # WEST SIDE # --- #
+        p1w = p2n
+        p2w = p1s
+        p3w = p4s
+        p4w = p3n
+
+        # --- # WEST SIDE # --- #
+        if player.theta == 0:
+            pg.draw.polygon(surface, (105,85,85), (p1s,p2s,p3s,p4s)) #SOUTH DRAW
+        elif 0 < player.theta < 90:
+            pg.draw.polygon(surface, (105,85,85), (p1s,p2s,p3s,p4s)) #SOUTH DRAW
+            pg.draw.polygon(surface, (85,65,65), (p1e,p2e,p3e,p4e)) #EAST DRAW
+        elif player.theta == 90:
+            pg.draw.polygon(surface, (85,65,65), (p1e,p2e,p3e,p4e)) #EAST DRAW
+        elif 90 < player.theta < 180:
+            pg.draw.polygon(surface, (85,65,65), (p1e,p2e,p3e,p4e)) #EAST DRAW
+            pg.draw.polygon(surface, (145,125,125), (p1n,p2n,p3n,p4n)) #NORTH DRAW
+        elif player.theta == 180:
+            pg.draw.polygon(surface, (145,125,125), (p1n,p2n,p3n,p4n)) #NORTH DRAW
+        elif 180 < player.theta < 270:
+            pg.draw.polygon(surface, (145,125,125), (p1n,p2n,p3n,p4n)) #NORTH DRAW
+            pg.draw.polygon(surface, (125,105,105), (p1w,p2w,p3w,p4w)) #WEST DRAW
+        elif player.theta == 270:
+            pg.draw.polygon(surface, (125,105,105), (p1w,p2w,p3w,p4w)) #WEST DRAW
+        elif 270 < player.theta < 360:
+            pg.draw.polygon(surface, (125,105,105), (p1w,p2w,p3w,p4w)) #WEST DRAW
+            pg.draw.polygon(surface, (105,85,85), (p1s,p2s,p3s,p4s)) #SOUTH DRAW
+
+        
 
 #wall ^
 #+--------------------------------------------------+#| CEILING TILE |#+-------------------------------------------------+#
+
+offset = 36
+CeilingTile_sprite_map = {
+    1: pg.image.load('./Sprites/CeilingTile/none.png')
+}
+
+
 class CeilingTile:
-    def __init__(self, x, y, sprite):
+    def __init__(self, x, y, id):
         self.x = x
         self.y = y
-        self.sprite = sprite
+        self.id = id
 
 
 
 
+def render_CeilingTiles(player: Player, renderdistance: int, tiles: list) -> list:
+    """
+    Based on a player's (player) postion, render distance (renderdistance), and a list of all CeilingTile objects loaded (tiles),
+    a list of CeilingTile objects is returned with same objects organized coordinately such that they form a circle around the player.
+    Obviously, this circle of CeilingTile objects has a radius that is roughly equal to the render distance.
+
+    Parameters:
+    player (Player): a player that the user desires to render the CeilingTile objects about
+    renderdistance (int): the radius in CeilingTile units (1 unit = 1 CeilingTile) that the user wishes to render CeilingTile objects within
+    tiles (list(CeilingTile)): a list of all loaded CeilingTile objects that will be iterated through to determine the render CeilingTile objects
+
+    Returns:
+    _rendered_tiles (list(CeilingTile)): a list of CeilingTile objects organized coordinately such that they form a circle around
+        the player's (x,y) postion with a radius equal to renderdistance.
+    """
+    _rendered_tiles = list()
+    for tile in tiles:
+        if (((tile.x + .5) - player.x)**2 + ((tile.y + .5) - player.y)**2) < renderdistance:
+            _rendered_tiles.append(tile)
+    return _rendered_tiles
+
+
+
+
+def draw_CeilingTiles(tiles: list, player: Player, surface: pg.surface) -> None:
+    """
+    Draws list of CeilingTile objects onto the surface. The CeilingTile objects are drawn in screen space 
+    such that they accuractely portray their postion relative to the player position with a small offset to
+    give perspective.
+
+    Paramters:
+    tiles (list(CeilingTile)): a list of CeilingTile objects that are going to be drawn onto the surface
+    player (Player): a Player that the user desires to the CeilingTile objects to be drawn relative to
+    surface (pg.surface): a pg.surface that the user wishes to draw the CeilingTile objects onto
+
+    Returns:
+    None
+    """
+    for tile in tiles:
+
+        x = (tile.x - player.x) * main_scale_factor + _rotate(player.theta, (0,offset))[0]
+        y = ((tile.y - player.y + 1) * main_scale_factor) * -1 - _rotate(player.theta, (0,offset))[1]
+        p1 = (x + (main_display_width / 2), y + (main_display_height / 2))
+        surface.blit(CeilingTile_sprite_map[tile.id], p1)
+
+testtile = [CeilingTile(-9, 7, 1), CeilingTile(-9, 5, 1), CeilingTile(9, 5, 1)]
 
 #ceiling tile ^
 #+--------------------------------------------------+#| TERRAIN |#+-------------------------------------------------+#
