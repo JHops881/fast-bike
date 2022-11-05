@@ -3,17 +3,40 @@ import numpy as np
 import math
 import sys
 from EZConnect import EZConnect
-import graphics as gxm
+import graphics as glib
 pg.init()
 
+
+
+mydisplay_width = 1920
+mydisplay_height = 1080
+mydisplay = pg.display.set_mode((mydisplay_width, mydisplay_height))
+
+myclock = pg.time.Clock()
+
+map_radius = 10
+myscalefactor = 48
+myrenderdistance = 100
+myoffset = 36
+
+myplayer = glib.Player(0, 0, None, 32, 32, 0, 2, (1/15), 67, None, None)
+test_floortiles = glib.FloorTile.generate_map(map_radius)
+test_ceilingtiles = [
+    glib.CeilingTile(-9, 7, 1, (False,False,False,False)),
+    glib.CeilingTile(-9, 5, 1, (True,True,True,True)),
+    glib.CeilingTile(9, 5, 1, (False,False,False,False))
+]
+test_terrains = [glib.Terrain(4, -2, 1)]
+
+healthbar = glib.GUIHealthBar(myplayer, 20, 20, glib.healthbar, mydisplay, (200, 40))
 
 #+------------------------------+#| START GAME LOOP |#+------------------------------+#
 
 while True:
-    gxm.main_display.fill(gxm.BLACK)
+    mydisplay.fill(glib.BLACK)
 
-    tile_surface = pg.Surface((gxm.tile_surface_width, gxm.tile_surface_height), pg.SRCALPHA, 32)
-    tile_surface = tile_surface.convert_alpha()
+    mysurface = pg.Surface((mydisplay_width, mydisplay_height), pg.SRCALPHA, 32)
+    mysurface = mysurface.convert_alpha()
 
     keys = pg.key.get_pressed()
 
@@ -28,36 +51,36 @@ while True:
 
     
     if keys[pg.K_e]:
-        gxm.main_player.theta-=2
+        myplayer.theta-=2
     if keys[pg.K_q]:
-        gxm.main_player.theta+=2
+        myplayer.theta+=2
     
 
     if keys[pg.K_w]:
-        x, y = gxm._rotate(gxm.main_player.theta, (0,1))
-        gxm.main_player.x += x * gxm.main_player.movespeed
-        gxm.main_player.y += y * gxm.main_player.movespeed
+        x, y = glib._rotate(myplayer.theta, (0,1))
+        myplayer.x += x * myplayer.stats.movespeed
+        myplayer.y += y * myplayer.stats.movespeed
 
     if keys[pg.K_s]:
-        x, y = gxm._rotate(gxm.main_player.theta, (0,-1))
-        gxm.main_player.x += x * gxm.main_player.movespeed
-        gxm.main_player.y += y * gxm.main_player.movespeed
+        x, y = glib._rotate(myplayer.theta, (0,-1))
+        myplayer.x += x * myplayer.stats.movespeed
+        myplayer.y += y * myplayer.stats.movespeed
  
     if keys[pg.K_a]:
-        x, y = gxm._rotate(gxm.main_player.theta, (-1,0))
-        gxm.main_player.x += x * gxm.main_player.movespeed
-        gxm.main_player.y += y * gxm.main_player.movespeed
+        x, y = glib._rotate(myplayer.theta, (-1,0))
+        myplayer.x += x * myplayer.stats.movespeed
+        myplayer.y += y * myplayer.stats.movespeed
    
     if keys[pg.K_d]:
-        x, y = gxm._rotate(gxm.main_player.theta, (1,0))
-        gxm.main_player.x += x * gxm.main_player.movespeed
-        gxm.main_player.y += y * gxm.main_player.movespeed
+        x, y = glib._rotate(myplayer.theta, (1,0))
+        myplayer.x += x * myplayer.stats.movespeed
+        myplayer.y += y * myplayer.stats.movespeed
 
 
-    gxm.main_player.theta = gxm.supervised_player_theta(gxm.main_player)
+    myplayer.constrain_theta()
 
     if keys[pg.K_z]:
-        print(gxm.main_player.theta)
+        print(myplayer.theta)
 
 
 
@@ -80,26 +103,27 @@ while True:
    
 
 
-    gxm.draw_FloorTiles(gxm.render_FloorTiles(gxm.main_player, gxm.render_distance, gxm.all_FloorTiles), gxm.main_player, tile_surface)
-    rendered_CeilingTiles = gxm.render_CeilingTiles(gxm.main_player, gxm.render_distance, gxm.testtile)
-    gxm.draw_Walls(rendered_CeilingTiles, gxm.main_player, tile_surface)
-    gxm.draw_CeilingTiles(rendered_CeilingTiles, gxm.main_player, tile_surface)
+    for d in test_floortiles:
+        if d.is_visible(myplayer, myrenderdistance):
+            d.draw(myplayer, mysurface, myscalefactor)
 
+    for d in test_ceilingtiles:
+        if d.is_visible(myplayer, myrenderdistance):
+            d.draw_walls(myplayer, mysurface, myscalefactor, myoffset)
+            d.draw(myplayer, mysurface, myscalefactor, myoffset)
     
-
-    gxm.rotate_surface(gxm.main_player, tile_surface, gxm.main_display)
+    glib.rotate_surface(myplayer, mysurface, mydisplay)
     
-    gxm.draw_Terrain(gxm.main_player, gxm.render_Terrain(gxm.main_player, gxm.render_distance, gxm.all_Terrain), gxm.main_display)
+    for d in test_terrains:
+        if d.is_visible(myplayer, myrenderdistance):
+            d.draw(myplayer, mydisplay, myscalefactor)
 
-    gxm.draw_player(gxm.main_player, gxm.main_display) #This object function draws our player
+    myplayer.draw(mydisplay)
 
-    gxm.draw_health(gxm.main_player, gxm.main_display)
-
-
-
+    healthbar.draw()
 
     pg.display.update()
-    gxm.main_clock.tick(60) #This is refreshing the screen 60 fps
+    myclock.tick(60) #This is refreshing the screen 60 fps
 
 
 #+------------------------------+#| END GAME LOOP |#+------------------------------+#

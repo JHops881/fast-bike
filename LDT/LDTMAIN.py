@@ -8,6 +8,13 @@ pg.init()
 
 main_clock = pg.time.Clock()
 
+DARK = (20,30,20)
+SEMI_DARK = (45,49,45)
+SEMI_MID = (60,64,60)
+MID = (90,94,90)
+SEMI_LIGHT = (120,130,120)
+LIGHT = (170,180,170)
+
 #--------------------------# FONT #--------------------------# 
 myfont = pg.font.Font('cour.ttf', 20)
 myfont.bold = True
@@ -35,12 +42,12 @@ def mouse_pos_within(x: float, y: float, w: float, h: float) -> bool:
 
 
 
-#--------------------------# DISPLAY #--------------------------# 
+#--------------------------# DISPLAY #--------------------------# #--------------------------# DISPLAY #--------------------------# 
 display_width = 1920
 display_height = 1080
 display = pg.display.set_mode((display_width, display_height))
 
-#--------------------------# SELECTOR #--------------------------# 
+#--------------------------# SELECTOR #--------------------------# #--------------------------# SELECTOR #--------------------------#
 selected_sprite = pg.image.load('selected.png')
 selected_sprite_x, selected_sprite_y = 1712, 74
 brush = 1
@@ -62,7 +69,22 @@ rock_x, rock_y = 1770, 74
 dirt_x, dirt_y = 1828, 74
 grass_x, grass_y = 1712, 132
 water_x, water_y = 1770, 132
-#--------------------------# VIEWPORT #--------------------------# 
+
+
+
+def draw_selector_block():
+    pg.draw.rect(display, (SEMI_MID), (selector_x, selector_y, selector_width, selector_height))
+    display.blit(FloorTile_sprite_map[1], (sand_x, sand_y))
+    display.blit(FloorTile_sprite_map[2], (rock_x, rock_y))
+    display.blit(FloorTile_sprite_map[3], (dirt_x, dirt_y))
+    display.blit(FloorTile_sprite_map[4], (grass_x, grass_y))
+    display.blit(FloorTile_sprite_map[5], (water_x, water_y))
+
+    display.blit(selected_sprite, (selected_sprite_x, selected_sprite_y))
+
+
+
+#--------------------------# VIEWPORT #--------------------------# #--------------------------# VIEWPORT #--------------------------# 
 viewport_width, viewport_height = 1608, 952
 viewport_x, viewport_y = 64, 64
 
@@ -80,6 +102,14 @@ class FloorTile:
         self.x = x
         self.y = y
         self.id = id
+
+class CeilingTile:
+    def __init__(self, x, y, id):
+        self.x = x
+        self.y = y
+        self.id = id
+
+
 
 def render_map(tiles: list, anchor: Anchor, renderdistance: tuple) -> list:
     rendered_tiles = list()
@@ -107,45 +137,51 @@ def new_map(s):
     return tiles
 
 _map = new_map(100)
-#--------------------------# CANVAS SIZE #--------------------------# 
-canvas_size_text = myfont.render('Canvas Size', False, (20,30,20), None)
 
-#--------------------------# EXPORT #--------------------------# 
-exporttext = myfont.render('Export', False, (170,180,170), None)
+#--------------------------# CANVAS SIZE #--------------------------# #--------------------------# CANVAS SIZE #--------------------------# 
+canvas_size_title_x, canvas_size_title_y, canvas_size_title_width, canvas_size_title_height = 1702, 524, 184, 30
+
+canvas_size_text = myfont.render('Canvas Size', False, DARK, None)
+canvas_size_text_x, canvas_size_text_y = 1707, 529
+
+canvas_size_up_x, canvas_size_up_y, canvas_size_up_width, canvas_size_up_height = 1702, 565, 50, 20
+canvas_size_down_x, canvas_size_down_y, canvas_size_down_width, canvas_size_down_height = 1702, 595, 50, 20
+
+canvas_size_num_title_x, canvas_size_num_title_y, canvas_size_num_title_width, canvas_size_num_title_height = 1762, 565, 70, 50
+
+def draw_canvas_size_block():
+    pg.draw.rect(display, (SEMI_LIGHT), (canvas_size_title_x, canvas_size_title_y, canvas_size_title_width, canvas_size_title_height))
+    display.blit(canvas_size_text, (canvas_size_text_x, canvas_size_text_y))
+    pg.draw.rect(display, MID, (canvas_size_up_x, canvas_size_up_y, canvas_size_up_width, canvas_size_up_height))
+    pg.draw.rect(display, MID, (canvas_size_down_x, canvas_size_down_y, canvas_size_down_width, canvas_size_down_height))
+    pg.draw.rect(display, MID, (canvas_size_num_title_x, canvas_size_num_title_y, canvas_size_num_title_width, canvas_size_num_title_height))
+
+#--------------------------# EXPORT #--------------------------# #--------------------------# EXPORT #--------------------------# 
+exporttext = myfont.render('Export', False, LIGHT, None)
 export_x, export_y, export_width, export_height = 1702, 670, 94, 30
 
-#--------------------------# MAIN #--------------------------# 
+def draw_export_block():
+    pg.draw.rect(display, DARK, (export_x, export_y, export_width, export_height))
+    display.blit(exporttext,(export_x+5, export_y+5))
+
+
+
+#--------------------------# MAIN #--------------------------# #--------------------------# MAIN #--------------------------# 
 while True:
+    #APPLICATION BACKGROUD COLOR
+    display.fill(SEMI_DARK) 
 
-    display.fill((45,49,45)) #APPLICATION BACKGROUD COLOR
-
-    viewport_surface = pg.Surface((viewport_width, viewport_height)) #VIEWPORT SURFACE INITIALIZING
-
+    #VIEWPORT SURFACE INITIALIZING
+    viewport_surface = pg.Surface((viewport_width, viewport_height))
     tiles_in_viewport = render_map(_map, viewport_anchor, ((viewport_width/2)/view_scale_factor + 1,(viewport_height/2)/view_scale_factor + 1)) #VIEWPORT SURFACE RENDERING
     draw_view(tiles_in_viewport, viewport_anchor, viewport_surface) #DRAWING ON VIEWPORT
-    
     display.blit(viewport_surface, (viewport_x, viewport_y)) #DRAWING VIEWPORT ON APPLICATION/DISPLAy
     
 
+    draw_selector_block()
+    draw_canvas_size_block()
+    draw_export_block()
 
-    pg.draw.rect(display, (60,64,60), (selector_x, selector_y, selector_width, selector_height)) #selector
-    display.blit(FloorTile_sprite_map[1], (sand_x, sand_y)) #sand in selector
-    display.blit(FloorTile_sprite_map[2], (rock_x, rock_y)) #rock in selector
-    display.blit(FloorTile_sprite_map[3], (dirt_x, dirt_y)) #dirt in selector
-    display.blit(FloorTile_sprite_map[4], (grass_x, grass_y)) #grass in selector
-    display.blit(FloorTile_sprite_map[5], (water_x, water_y)) #water in selector
-
-    display.blit(selected_sprite, (selected_sprite_x, selected_sprite_y))
-
-
-    pg.draw.rect(display, (120,130,120), (1702, 524, 184, 30)) # canvas size title
-    display.blit(canvas_size_text, (1707, 529))
-    pg.draw.rect(display, (90,94,90), (1702, 565, 50, 20)) #up button
-    pg.draw.rect(display, (90,94,90), (1702, 595, 50, 20)) #down button
-
-
-    pg.draw.rect(display, (20,30,20), (export_x, export_y, export_width, export_height)) # EXPORT 
-    display.blit(exporttext,(export_x+5, export_y+5))
 
     mouse_x, mouse_y = pg.mouse.get_pos()
     keys = pg.key.get_pressed()
@@ -158,9 +194,9 @@ while True:
             x, y = x + (viewport_width / 2) +64, y + (viewport_height / 2)+64
             if mouse_pos_within(x, y, view_scale_factor, view_scale_factor):
                 pos_text = 'X: ' + str(tile.x) + ' Y: ' + str(tile.y)
-                display.blit((myfont.render(pos_text, False, (255,255,255), None)), (64, 20))
+                display.blit((myfont.render(pos_text, False, LIGHT, None)), (64, 20))
 
-    for event in pg.event.get(): #This is checking for exit
+    for event in pg.event.get():
         
         
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
@@ -202,7 +238,7 @@ while True:
                             line = (tile.x,tile.y,tile.id)
                             writer.writerow(line)
                 file.close()
-                exporttext = myfont.render('Done.', False, (170,180,170), None)
+                exporttext = myfont.render('Done.', False, LIGHT, None)
 
         elif event.type == pg.MOUSEBUTTONDOWN and event.button == 3:
             if mouse_pos_within(viewport_x, viewport_y, viewport_width, viewport_height):
