@@ -6,7 +6,6 @@ import pygame as pg
 from drawable import Drawable
 from player import Player
 from graphics import _rotate
-from game_constants import TERRAIN_SPRITEMAP
 
 __author__      = "Joseph Hopwood and Joshua Hopwood"
 __credits__     = []
@@ -23,11 +22,11 @@ class Terrain(Drawable):
         else:
             return False
 
-    def draw(self, player, display: pg.display, scalefactor: int) -> None:
+    def draw(self, player, display: pg.display, scalefactor: int, map:dict) -> None:
         x = (self.x - player.x) * scalefactor
         y = ((self.y - player.y + 1) * scalefactor) * -1
         x, y = _rotate(player.theta, (x,y))
-        x -= (TERRAIN_SPRITEMAP[self.id].get_width() / 2)
-        y -= TERRAIN_SPRITEMAP[self.id].get_height()
+        x -= (map[self.id].get_width() / 2)
+        y -= map[self.id].get_height()
         p1 = (x + (display.get_width() / 2), y + (display.get_height() / 2))
-        display.blit(TERRAIN_SPRITEMAP[self.id], p1)
+        display.blit(map[self.id], p1)

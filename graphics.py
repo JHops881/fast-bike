@@ -19,7 +19,6 @@
 import math
 import pygame as pg
 
-from game_constants import *
 from drawable import Drawable
 from player import Player
 
@@ -68,29 +67,3 @@ def rotate_surface(player: Player, surface: pg.surface,
     r = rotated_surface.get_rect()
     display.blit(rotated_surface, 
             (0 - (r.centerx - s.centerx), 0 - (r.centery - s.centery)))
-
-# GUI Section ---------------------------------------------------------------------------------------------------------
-
-
-# @joseph... please fix this
-# TODO move to a new file
-# TODO document
-
-
-class GUIElement:
-
-    def __init__(self, player, disx, disy, image, display, scale:tuple):
-        self.player = player
-        self.disx = disx
-        self.disy = disy
-        self.image = image
-        self.display = display
-        self.scale = scale
-    
-    def draw(self):
-        self.display.blit(pg.transform.scale((self.image), self.scale), (self.disx, self.disy))
-
-class GUIHealthBar(GUIElement):
-
-    def draw(self):
-        super().draw()

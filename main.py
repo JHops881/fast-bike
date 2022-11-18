@@ -4,51 +4,25 @@
 
 import pygame as pg 
 import sys
-from graphics import _rotate, GUIHealthBar, rotate_surface
-from player import Player
-from terrain import Terrain
-from ceilingtile import CeilingTile
-from floortile import FloorTile
-from game_constants import BLACK, HEALTHBAR
+from graphics import _rotate, rotate_surface
+from game_constants import *
+from gui_elements import *
 
 __author__      = "Joseph Hopwood and Joshua Hopwood"
 __credits__     = []
-__version__     = "0.0.1"
+__version__     = "0.0.2"
 __maintainer__  = "Joseph Hopwood"
 __email__       = "jhopsmc@gmail.com"
 
-# TODO move all of these constants to game_constants.py and refactor them to
-# being capslock
-mydisplay_width = 1920
-mydisplay_height = 1080
-mydisplay = pg.display.set_mode((mydisplay_width, mydisplay_height))
 
-myclock = pg.time.Clock()
-
-map_radius = 10
-myscalefactor = 48
-myrenderdistance = 100
-myoffset = 36
-
-myplayer = Player(0, 0, None, 32, 32, 0, 2, (1/15), 67, None, None)
-test_floortiles = FloorTile.generate_map(map_radius)
-test_ceilingtiles = [
-    CeilingTile(-9, 7, 1, (False,False,False,False)),
-    CeilingTile(-9, 5, 1, (True,True,True,True)),
-    CeilingTile(9, 5, 1, (False,False,False,False))
-]
-test_terrains = [Terrain(4, -2, 1)]
-
-healthbar = GUIHealthBar(myplayer, 20, 20, HEALTHBAR, mydisplay, (200, 40))
-
-#+------------------------------+#| START GAME LOOP |#+------------------------------+#
+#+-------------------------+#| START GAME LOOP |#+----------------------------+#
 
 if __name__ == "__main__":
     pg.init()
     while True:
-        mydisplay.fill(BLACK)
+        DISPLAY.fill(BLACK)
 
-        mysurface = pg.Surface((mydisplay_width, mydisplay_height), pg.SRCALPHA, 32)
+        mysurface = pg.Surface((DISPLAY_WIDTH, DISPLAY_HEIGHT), pg.SRCALPHA, 32)
         mysurface = mysurface.convert_alpha()
 
         keys = pg.key.get_pressed()
@@ -64,56 +38,56 @@ if __name__ == "__main__":
 
         
         if keys[pg.K_e]:
-            myplayer.theta-=2
+            PLAYER.theta-=2
         if keys[pg.K_q]:
-            myplayer.theta+=2
+            PLAYER.theta+=2
         
 
         if keys[pg.K_w]:
-            x, y = _rotate(myplayer.theta, (0,1))
-            myplayer.x += x * myplayer.stats.movespeed
-            myplayer.y += y * myplayer.stats.movespeed
+            x, y = _rotate(PLAYER.theta, (0,1))
+            PLAYER.x += x * PLAYER.stats.movespeed
+            PLAYER.y += y * PLAYER.stats.movespeed
 
         if keys[pg.K_s]:
-            x, y = _rotate(myplayer.theta, (0,-1))
-            myplayer.x += x * myplayer.stats.movespeed
-            myplayer.y += y * myplayer.stats.movespeed
+            x, y = _rotate(PLAYER.theta, (0,-1))
+            PLAYER.x += x * PLAYER.stats.movespeed
+            PLAYER.y += y * PLAYER.stats.movespeed
     
         if keys[pg.K_a]:
-            x, y = _rotate(myplayer.theta, (-1,0))
-            myplayer.x += x * myplayer.stats.movespeed
-            myplayer.y += y * myplayer.stats.movespeed
+            x, y = _rotate(PLAYER.theta, (-1,0))
+            PLAYER.x += x * PLAYER.stats.movespeed
+            PLAYER.y += y * PLAYER.stats.movespeed
     
         if keys[pg.K_d]:
-            x, y = _rotate(myplayer.theta, (1,0))
-            myplayer.x += x * myplayer.stats.movespeed
-            myplayer.y += y * myplayer.stats.movespeed
+            x, y = _rotate(PLAYER.theta, (1,0))
+            PLAYER.x += x * PLAYER.stats.movespeed
+            PLAYER.y += y * PLAYER.stats.movespeed
 
 
-        myplayer.constrain_theta()
+        PLAYER.constrain_theta()
 
         if keys[pg.K_z]:
-            print(myplayer.theta)
+            print(PLAYER.theta)
 
-        for d in test_floortiles:
-            if d.is_visible(myplayer, myrenderdistance):
-                d.draw(myplayer, mysurface, myscalefactor)
+        for d in TEST_FLOORTILES:
+            if d.is_visible(PLAYER, RENDERDISTANCE):
+                d.draw(PLAYER, mysurface, SCALEFACTOR, FLOOR_TILE_SPRITEMAP)
 
-        for d in test_ceilingtiles:
-            if d.is_visible(myplayer, myrenderdistance):
-                d.draw_walls(myplayer, mysurface, myscalefactor, myoffset)
-                d.draw(myplayer, mysurface, myscalefactor, myoffset)
+        for d in TEST_CEILINGTILES:
+            if d.is_visible(PLAYER, RENDERDISTANCE):
+                d.draw_walls(PLAYER, mysurface, SCALEFACTOR, OFFSET)
+                d.draw(PLAYER, mysurface, SCALEFACTOR, OFFSET, CEILING_TILE_SPRITEMAP)
         
-        rotate_surface(myplayer, mysurface, mydisplay)
+        rotate_surface(PLAYER, mysurface, DISPLAY)
         
-        for d in test_terrains:
-            if d.is_visible(myplayer, myrenderdistance):
-                d.draw(myplayer, mydisplay, myscalefactor)
+        for d in TEST_TERRAINS:
+            if d.is_visible(PLAYER, RENDERDISTANCE):
+                d.draw(PLAYER, DISPLAY, SCALEFACTOR, TERRAIN_SPRITEMAP)
 
-        myplayer.draw(mydisplay)
+        PLAYER.draw(DISPLAY)
 
-        healthbar.draw()
+        hpbar.draw()
 
         pg.display.update()
-        myclock.tick(60) #This is refreshing the screen 60 fps
+        CLOCK.tick(60) #This is refreshing the screen 60 fps
 

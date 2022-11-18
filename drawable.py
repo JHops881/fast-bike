@@ -37,7 +37,7 @@ class Drawable(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def draw(self):
+    def draw(self) -> None:
         """
         Draws this game object to the screen
         """

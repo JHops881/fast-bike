@@ -5,9 +5,7 @@
 """
 
 import pygame as pg
-
 from drawable import Drawable
-from game_constants import *
 
 __author__      = "Joseph Hopwood and Joshua Hopwood"
 __credits__     = []
@@ -33,7 +31,7 @@ class Player(Drawable):
             self.stored = stored
             self.hotbar = hotbar
 
-    def __init__(self, x:float, y:float, id:int, width:int, height:int, theta:int,
+    def __init__(self, x:float, y:float, id:int, width:int,height:int,theta:int,
     rotspeed:int, movespeed:float, health:int, stored:list, hotbar:list):
         """ TODO give method desc
         """
@@ -52,7 +50,7 @@ class Player(Drawable):
             - `player` desired player object to be drawn
             - `display` The display that the player is to be drawn on
         """
-        pg.draw.rect(display, GREEN, ((display.get_width() - self.width) / 2,
+        pg.draw.rect(display,(0,255,0), ((display.get_width() - self.width) / 2,
         (display.get_height() - self.height) / 2, self.width, self.height))
 
     def constrain_theta(self):
